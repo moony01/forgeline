@@ -1,0 +1,18 @@
+{
+  "name": "forgeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:app": "pnpm --filter forgeline-app dev",
+    "build:app": "pnpm --filter forgeline-app build",
+    "dev:brief": "pnpm --filter forgeline-brief dev",
+    "build:brief": "pnpm --filter forgeline-brief build",
+    "lint": "echo \"Lint script not implemented yet, skipping.\"",
+    "test": "echo \"Test script not implemented yet, skipping.\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.1"
+}
