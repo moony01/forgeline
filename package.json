@@ -8,11 +8,27 @@
     "build:app": "pnpm --filter forgeline-app build",
     "dev:brief": "pnpm --filter forgeline-brief dev",
     "build:brief": "pnpm --filter forgeline-brief build",
-    "lint": "echo \"Lint script not implemented yet, skipping.\"",
-    "test": "echo \"Test script not implemented yet, skipping.\""
+    "start:figma": "pnpm --filter forgeline-mcp-server start:ws",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.vue --fix && prettier --write . && tsc --noEmit",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vitest/ui": "^1.6.0",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "jsdom": "^24.0.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0",
+    "eslint-plugin-vitest": "^0.4.1"
+  },
   "packageManager": "pnpm@10.18.1"
 }
