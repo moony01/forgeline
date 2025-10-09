@@ -64,7 +64,7 @@ pnpm lint && pnpm test
 - `git rev-parse HEAD`로 방금 생성된 커밋의 해시를 가져옵니다.
 - 이 해시를 사용하여, 푸시 및 배포가 성공할 것을 가정하고 **성공 로그를 생성**합니다.
   ```
-  ## {YYYY-MM-DD hh:mm:ss}
+  ## {YYYY-MM-DD hh:mm}
   - 커밋 해시: {latestCommitHash}
   - 브랜치: {targetBranch}
   - 테스트 결과: 성공/실패 요약
