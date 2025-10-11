@@ -1,14 +1,17 @@
 # Repository Push & Optional Deploy Prompt
 
 ## 목적
+
 - `c:\github\forgeline` 로컬 저장소의 변경 사항을 지정한 브랜치로 안전하게 커밋하고 푸시합니다.
 - 필요 시 GitHub Actions 배포 워크플로 실행 여부를 프롬프트에서 선택할 수 있도록 합니다.
 
 ## 입력 파라미터
+
 - `targetBranch`: `main` -> 푸시할 Git 브랜치명 (예: `main`, `develop`).
 - `runDeployment`: `false` -> GitHub Actions 배포 워크플로 실행 여부 (예: `true`/`false`).
 
 ## 절차 개요
+
 1. **테스트 실행** → 시스템 실행 시 에러가 없는지 확인.
 2. **원격 동기화** → `git pull`로 최신 변경 사항 반영.
 3. **스테이징 및 로그 생성** → `git add`로 변경 사항을 스테이징하고, 성공을 가정한 로그를 `doc/deploy/log.md`에 작성 및 스테이징.
@@ -21,6 +24,7 @@
 ## 세부 지침
 
 ### 0. 사전 보고
+
 - 전체 계획과 사용할 `targetBranch`, `runDeployment` 값을 먼저 사용자에게 요약 보고합니다.
 - 모든 단계는 **"테스트 → pull → add → commit → push (→ deploy)"** 순으로 진행하며, 단계별 진행 전후로 사용자에게 상태를 공유합니다.
 
@@ -48,6 +52,7 @@ pnpm lint && pnpm test
 ```
 
 ### 2. git pull 단계
+
 - 명령: `git pull origin {targetBranch}`.
 - 컨플릭트 발생 시:
   - 충돌 파일과 오류 내용을 사용자에게 보고합니다.
@@ -56,11 +61,13 @@ pnpm lint && pnpm test
 - 충돌 해결 과정을 병합 완료까지 상세히 기록합니다.
 
 ### 3. git add → commit 단계
+
 - `git status --short`로 변경 파일 확인 후 사용자에게 간단 보고합니다.
 - 필요한 파일만 `git add`로 스테이징합니다.
 - 커밋 메시지는 **'영문 타입: 한글 설명'** 형식으로 작성하며, 예시: `feat: 기능 추가`, `fix: 버그 수정`, `docs: 문서 수정` 등 팀 규칙에 맞게 작성하여 **코드 변경 사항만 먼저 커밋**합니다.
 
 ### 4. 산출물 기록 및 커밋 수정
+
 - `git rev-parse HEAD`로 방금 생성된 커밋의 해시를 가져옵니다.
 - 이 해시를 사용하여, 푸시 및 배포가 성공할 것을 가정하고 **성공 로그를 생성**합니다.
   ```
@@ -75,6 +82,7 @@ pnpm lint && pnpm test
 - `git commit --amend --no-edit` 명령을 사용해, **별도의 커밋을 만들지 않고 이전 커밋에 로그 파일을 추가**합니다.
 
 ### 5. git push 단계
+
 - 명령: `git push origin {targetBranch}`.
 - **푸시 실패 시:**
   - 실패 원인을 사용자에게 보고하고 해결 전략을 제안합니다.
@@ -82,6 +90,7 @@ pnpm lint && pnpm test
   - 사용자 승인 후, 문제 해결 및 재시도를 진행합니다.
 
 ### 6. GitHub Actions 배포 (옵션)
+
 - `runDeployment === true`일 때만 실행합니다.
 - **배포 실패 시:**
   - 실패 로그 요약 및 원인을 보고합니다.
@@ -90,10 +99,12 @@ pnpm lint && pnpm test
   - 성공 상태(실행 ID, URL 등)를 반영하여 `doc/deploy/log.md`를 업데이트하고, **성공 상태를 기록하는 새 커밋**을 생성하여 푸시합니다.
 
 ### 7. 단계별 보고
+
 - 각 단계 시작 전 계획, 진행 중 발생한 특이사항, 완료 후 결과를 모두 한국어로 사용자에게 공유합니다.
 - 문제 발생 시 항상 **“문제 설명 → 해결 방안 제안 → 사용자 승인 → 해결 적용 → 단계 재시도”** 플로우를 따릅니다.
 
 ## 산출물
+
 - 성공적으로 푸시된 최신 커밋 해시.
 - (선택) 배포 워크플로 실행 ID와 로그 URL (`runDeployment === true`인 경우).
 - 테스트, pull, add/commit, push, deploy 단계별 수행 결과 요약.

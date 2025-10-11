@@ -1,9 +1,4 @@
 {
   "files": [],
-  "references": [
-    { "path": "./apps/forgeline-app" },
-    { "path": "./apps/forgeline-brief" },
-    { "path": "./packages/forgeline-cli" },
-    { "path": "./packages/forgeline-mcp-server" }
-  ]
+  "references": [{ "path": "./packages/forgeline-app" }, { "path": "./packages/forgeline-brief" }]
 }

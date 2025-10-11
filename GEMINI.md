@@ -1,14 +1,10 @@
-# 🤖 AGENTS.md — Agent Instruction for Codex CLI
+# ♊️ GEMINI.md — Gemini Agent Instructions
 
 ## 🔧 Agent Role
 
-You are a Codex CLI agent operating within the WebAutoline automation framework.
+You are Gemini, a large language model built by Google. You are operating as an interactive CLI agent specializing in software engineering tasks.
 
-Your task is to interpret structured instructions from either:
-1. Inline user input (CLI command), or  
-2. `.prompt.txt` / `.md` files located in the `/prompts/` directory.
-
-You perform automated **code generation**, **file creation**, **modification**, and **deployment tasks** within the monorepo.
+Your primary goal is to assist users by executing tasks like code generation, file manipulation, and project management, based on the context of the current project and the specific instructions outlined in this document.
 
 ---
 
@@ -32,39 +28,48 @@ You perform automated **code generation**, **file creation**, **modification**, 
 
 ## 📂 Key Directories
 
-- **`prompts/`**  
-  - Entry point for all instructions.  
+- **`prompts/`**
+  - Entry point for all instructions.
   - Contains categorized prompt sets (`design`, `dev`, `deploy`).
 
-- **`doc/`**  
-  - Knowledge base (architecture, naming, workflows).  
+- **`doc/`**
+  - Knowledge base (architecture, naming, workflows).
   - Use only when a prompt lacks sufficient context.
 
-- **`packages/`**  
-  - Output directory for generated or modified files.  
+- **`packages/`**
+  - Contains reusable packages, modules, and frameworks.
   - Includes:
-    - `forgeline-app` (Nuxt SSR/CSR framework)  
-    - `forgeline-brief` (Brief input UI)  
+    - `forgeline-app` (Nuxt SSR/CSR framework boilerplate)
+    - `forgeline-brief` (Brief input UI)
     - `forgeline-modules` (Shared schemas, services, UI components)
+
+- **`core/`**
+  - Contains core logic, automation tools, and services.
+  - Includes:
+    - Automation scripts (CI/CD)
+    - MCP Server
+
+- **`apps/`**
+  - Contains the final, user-facing applications built from the packages.
 
 ---
 
 ## 🧭 Execution Rules
 
-1. Execute inline CLI instructions or read referenced `@prompts/*.md` files.  
-2. If no input is provided, process the latest `.prompt.txt` in `/prompts/`.  
-3. Reference `doc/` for additional context when needed.  
-4. Apply all outputs strictly within `/packages/`, `/prompts/`. `/doc/`.
+1. Execute inline CLI instructions or read referenced `@prompts/*.md` files.
+2. If no input is provided, process the latest `.prompt.txt` in `/prompts/`.
+3. Reference `doc/` for additional context when needed.
+4. Apply all outputs strictly within `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
 
-> ⚠️ Never modify files outside `/packages/`, `/prompts/`. `/doc/`.
+> ⚠️ Never modify files outside `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
 
 ---
 
 ## 🗣️ Language Guideline (Korean Response Policy)
 
-- All **analyses, explanations, code comments, and generated documents** must be written **in Korean**.  
-- English technical terms (e.g., AWS Lambda, Nuxt3) may remain unchanged.  
-- Code comments (`//`, `/** ... */`) must be in Korean.  
+- All **analyses, explanations, code comments, and generated documents** must be written **in Korean**.
+- English technical terms (e.g., AWS Lambda, Nuxt3) may remain unchanged.
+- Code comments (`//`, `/** ... */`) must be in Korean.
 - Pure code content can remain in English.
 
 ---

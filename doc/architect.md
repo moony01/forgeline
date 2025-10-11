@@ -12,7 +12,7 @@ WebAutoline is an AI-powered automation platform that transforms a structured de
 ↓  
 [MCP Servers: Figma → CodeGen → Deploy]  
 ↓  
-[forgeline-app output (SSR or CSR)]  
+[forgeline-app output (SSR or CSR)]
 
 ---
 
@@ -28,40 +28,39 @@ WebAutoline is an AI-powered automation platform that transforms a structured de
 ├── AGENTS.md # Codex CLI agent contract
 ├── GEMINI.md # Gemini CLI agent contract
 
-
 ---
 
 ## 🔗 MCP-Based Automation Flow
 
-1. **Brief Input**  
-   - A user fills out a design brief on `forgeline-brief`  
+1. **Brief Input**
+   - A user fills out a design brief on `forgeline-brief`
    - `design-brief.json` is stored locally or uploaded to S3
 
-2. **Prompt Generation**  
-   - A `.prompt.txt` file is generated in `/prompts/` based on the brief  
+2. **Prompt Generation**
+   - A `.prompt.txt` file is generated in `/prompts/` based on the brief
    - The prompt includes design/tone/goals/sections in plain language
 
-3. **Agent Triggered**  
-   - Gemini/Codex CLI detects the prompt and starts action  
+3. **Agent Triggered**
+   - Gemini/Codex CLI detects the prompt and starts action
    - Agent reads prompt → optionally uses `doc/` → writes output to `packages/`
 
-4. **MCP Toolchain Activated**  
-   - **Figma MCP Server** → Auto-generates design from brief  
-   - **CodeGen MCP Server** → Generates Vue/Nuxt components  
+4. **MCP Toolchain Activated**
+   - **Figma MCP Server** → Auto-generates design from brief
+   - **CodeGen MCP Server** → Generates Vue/Nuxt components
    - **Deploy MCP Server** → Deploys the app as CSR or SSR
 
-5. **Deployment Output**  
-   - CSR: GitHub Pages or S3 (for landing pages, low-cost)  
+5. **Deployment Output**
+   - CSR: GitHub Pages or S3 (for landing pages, low-cost)
    - SSR: AWS SAM + Lambda@Edge (for SEO, e-commerce)
 
 ---
 
 ## 💡 2-Track Architecture for Web Agency Business
 
-| Track      | Target Project      | Rendering | Deployment         | Cost Level |
-|------------|---------------------|-----------|---------------------|------------|
-| **CSR**    | Landing pages, Info | CSR/SSG   | GitHub Pages, S3    | Low        |
-| **SSR**    | Shopping, Booking   | SSR       | AWS SAM + Lambda    | High       |
+| Track   | Target Project      | Rendering | Deployment       | Cost Level |
+| ------- | ------------------- | --------- | ---------------- | ---------- |
+| **CSR** | Landing pages, Info | CSR/SSG   | GitHub Pages, S3 | Low        |
+| **SSR** | Shopping, Booking   | SSR       | AWS SAM + Lambda | High       |
 
 The same `forgeline-app` framework supports both tracks using `definePageMeta({ ssr })`.
 
@@ -79,6 +78,6 @@ The same `forgeline-app` framework supports both tracks using `definePageMeta({ 
 
 ## 🧾 Related Documents
 
-- [`mcp-flow.md`](./mcp-flow.md): Protocol for agent-to-tool orchestration  
-- [`naming-convention.md`](./naming-convention.md): File, component, schema naming rules  
+- [`mcp-flow.md`](./mcp-flow.md): Protocol for agent-to-tool orchestration
+- [`naming-convention.md`](./naming-convention.md): File, component, schema naming rules
 - [`brief.schema.ts`](../packages/forgeline-modules/brief-core/) — Brief JSON validation
