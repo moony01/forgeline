@@ -1,0 +1,17 @@
+{
+  "name": "forgeline-mcp-server",
+  "version": "1.0.0",
+  "description": "Figma와 통신하는 MCP 서버 엔진",
+  "main": "src/mcp-host.ts",
+  "scripts": {
+    "start:ws": "bun run src/ws-server.ts"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "^5.0.0",
+    "@types/ws": "^8.5.10"
+  }
+}

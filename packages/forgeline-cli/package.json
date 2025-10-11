@@ -1,0 +1,23 @@
+{
+  "name": "forgeline-cli",
+  "version": "1.0.0",
+  "description": "CLI controller for AI agent",
+  "main": "dist/index.js",
+  "bin": {
+    "forgeline": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "design:1day1message": "node scripts/create-1day1message-layout.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.12.12",
+    "tsx": "^4.11.0"
+  }
+}
