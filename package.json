@@ -25,5 +25,11 @@
     "prettier": "^3.2.5",
     "typescript": "^5.4.5"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@parcel/watcher"
+    ]
+  },
   "packageManager": "pnpm@10.18.1"
 }
