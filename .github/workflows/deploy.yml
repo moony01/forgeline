@@ -51,6 +51,9 @@ jobs:
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
 
+      - name: 루트 index.html을 staging으로 복사
+        run: cp index.html staging/
+
       # forgeline-brief 빌드 및 복사
       - name: Build forgeline-brief
         if: needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:brief')
