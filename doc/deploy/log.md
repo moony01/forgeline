@@ -1,9 +1,16 @@
-## 2025-10-12 18:20
-- 커밋 해시: af1571aefad4892860fe509554fa8740765d9537
+## 2025-10-12 18:30
+- 커밋 해시: 388f1288ced0f2bd993d7c18ed68df030b57357d
 - 브랜치: main
 - 테스트 결과: 성공
 - GitHub Actions (brief-gh-pages): 대기 중
 - 배포 확인 링크: 대기 중
+
+## 2025-10-12 18:20
+- 커밋 해시: af1571aefad4892860fe509554fa8740765d9537
+- 브랜치: main
+- 테스트 결과: 성공
+- GitHub Actions (brief-gh-pages): 성공
+- 배포 확인 링크: https://moony01.com/forgeline/
 
 ## 2025-10-12 18:10
 - 커밋 해시: 95b2bc79f1d263f9448c7184f9bf9126efce643b
