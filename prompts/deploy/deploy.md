@@ -1,23 +1,26 @@
-# Repository Push & Optional Deploy Prompt
+# Repository Push & Conditional Deploy Prompt
 
 ## 목적
 
 - `c:\github\forgeline` 로컬 저장소의 변경 사항을 지정한 브랜치로 안전하게 커밋하고 푸시합니다.
-- 필요 시 GitHub Actions 배포 워크플로 실행 여부를 프롬프트에서 선택할 수 있도록 합니다.
+- 자동 배포를 실행할지, 특정 대상에 수동 배포할지, 또는 배포를 건너뛸지 프롬프트에서 선택할 수 있도록 합니다.
 
 ## 입력 파라미터
 
 - `targetBranch`: `main` -> 푸시할 Git 브랜치명 (예: `main`, `develop`).
-- `runDeployment`: `false` -> GitHub Actions 배포 워크플로 실행 여부 (예: `true`/`false`).
+- `deploymentTarget`: `'auto'` -> 배포 실행 방식을 지정합니다.
+  - `'auto'`: 커밋 메시지에 별도 태그를 추가하지 않습니다. CI/CD는 변경된 파일을 감지하여 **자동으로 배포**합니다.
+  - `'none'`: 커밋 메시지에 `[no-deploy]` 태그를 추가합니다. CI/CD는 **배포를 실행하지 않습니다.**
+  - `'app-gh-pages'`, `'brief-gh-pages'` 등: 커밋 메시지에 `[deploy:타겟]` 태그를 추가하여 **수동으로 배포를 강제**합니다.
 
 ## 절차 개요
 
 1. **린트 실행** → 코드 스타일 및 잠재적 오류가 없는지 확인.
 2. **원격 동기화** → `git pull`로 최신 변경 사항 반영.
 3. **스테이징 및 로그 생성** → `git add`로 변경 사항을 스테이징하고, 성공을 가정한 로그를 `doc/deploy/log.md`에 작성 및 스테이징.
-4. **통합 커밋** → 코드 변경 사항과 로그 파일을 단일 커밋으로 생성.
+4. **통합 커밋** → 코드 변경 사항과 로그 파일을 단일 커밋으로 생성. **이때 `deploymentTarget` 값에 따라 적절한 배포 태그를 커밋 메시지에 포함**합니다.
 5. **푸시** → `git push origin {targetBranch}`.
-6. **선택적 배포** → `runDeployment`가 `true`이면 GitHub Actions 워크플로 실행.
+6. **배포** → 푸시된 커밋의 태그와 내용에 따라 GitHub Actions 워크플로가 배포를 자동으로 처리합니다.
 7. **실패 시 로그 수정** → 푸시 또는 배포 실패 시, 이전 커밋을 수정(`amend`)하여 로그 내용을 '실패'로 업데이트.
 8. **보고** → 각 단계 완료 및 특이사항을 사용자에게 보고.
 
@@ -25,32 +28,26 @@
 
 ### 0. 사전 보고
 
-- 전체 계획과 사용할 `targetBranch`, `runDeployment` 값을 먼저 사용자에게 요약 보고합니다.
-- 모든 단계는 **"테스트 → pull → add → commit → push (→ deploy)"** 순으로 진행하며, 단계별 진행 전후로 사용자에게 상태를 공유합니다.
+- 전체 계획과 사용할 `targetBranch`, `deploymentTarget` 값을 먼저 사용자에게 요약 보고합니다.
 
 ### 1. 린트 단계 (Lint Phase)
 
 - `pnpm lint`를 실행하여 코드 품질과 스타일을 검증합니다.
-- (`eslint`, `prettier`, `tsc --noEmit`가 순차적으로 실행됩니다.)
-
-- 실패 시:
-- 에러 로그를 분석하여 원인을 사용자에게 상세히 설명하고, 가능한 해결 방안을 함께 제시합니다.
-- 사용자가 수정 방안을 승인하면 해당 수정사항을 적용한 후 린트를 재실행합니다.
 
 ### 2. git pull 단계
 
-- 명령: `git pull origin {targetBranch}`.
-- 컨플릭트 발생 시:
-  - 충돌 파일과 오류 내용을 사용자에게 보고합니다.
-  - 가능한 해결 방법(예: 특정 파일 우선 적용, 수동 병합 절차)을 제안합니다.
-  - 사용자 확인 후 병합을 수행하고 다시 `git pull`을 반복합니다.
-- 충돌 해결 과정을 병합 완료까지 상세히 기록합니다.
+- `git pull origin {targetBranch}`를 실행합니다.
 
 ### 3. git add → commit 단계
 
 - `git status --short`로 변경 파일 확인 후 사용자에게 간단 보고합니다.
 - 필요한 파일만 `git add`로 스테이징합니다.
-- 커밋 메시지는 **'영문 타입: 한글 설명'** 형식으로 작성하며, 예시: `feat: 기능 추가`, `fix: 버그 수정`, `docs: 문서 수정` 등 팀 규칙에 맞게 작성하여 **코드 변경 사항만 먼저 커밋**합니다.
+- 커밋 메시지는 **'영문 타입: 한글 설명'** 형식으로 작성합니다.
+- `deploymentTarget` 값에 따라 커밋 메시지 끝에 다음 태그 중 하나를 추가합니다:
+  - `deploymentTarget` == `'none'`: `[no-deploy]` 태그를 추가합니다.
+  - `deploymentTarget` == `'auto'`: 아무 태그도 추가하지 않습니다.
+  - `deploymentTarget`이 그 외의 값 (예: `'app-gh-pages'`): `[deploy:{deploymentTarget}]` 태그를 추가합니다.
+- 위 규칙에 따라 생성된 커밋 메시지로 **코드 변경 사항만 먼저 커밋**합니다.
 
 ### 4. 산출물 기록 및 커밋 수정
 
@@ -61,7 +58,7 @@
   - 커밋 해시: {latestCommitHash}
   - 브랜치: {targetBranch}
   - 테스트 결과: 성공/실패 요약
-  - GitHub Actions: 대기 중 / 실행 안 함
+  - GitHub Actions ({deploymentTarget}): 대기 중 / 실행 안 함
   - 배포 확인 링크: 대기 중 / 미실행
   ```
 - 생성된 로그를 `doc/deploy/log.md` 파일의 **맨 위에 추가**하고, `git add`로 스테이징합니다.
@@ -69,20 +66,12 @@
 
 ### 5. git push 단계
 
-- 명령: `git push origin {targetBranch}`.
-- **푸시 실패 시:**
-  - 실패 원인을 사용자에게 보고하고 해결 전략을 제안합니다.
-  - **실패 상태를 기록하는 새로운 커밋을 생성**합니다. (예: `chore: Update deployment log to failed push`)
-  - 사용자 승인 후, 문제 해결 및 재시도를 진행합니다.
+- `git push origin {targetBranch}`를 실행합니다.
 
-### 6. GitHub Actions 배포 (옵션)
+### 6. GitHub Actions 배포
 
-- `runDeployment === true`일 때만 실행합니다.
-- **배포 실패 시:**
-  - 실패 로그 요약 및 원인을 보고합니다.
-  - **실패 상태를 기록하는 새로운 커밋을 생성**하고 푸시합니다.
-- **배포 성공 시:**
-  - 성공 상태(실행 ID, URL 등)를 반영하여 `doc/deploy/log.md`를 업데이트하고, **성공 상태를 기록하는 새 커밋**을 생성하여 푸시합니다.
+- 실제 배포 로직은 GitHub Actions에 의해 커밋 메시지 태그에 따라 자동으로 처리됩니다.
+- 에이전트는 배포의 성공/실패 여부를 확인하고 로그를 업데이트하는 역할만 수행합니다.
 
 ### 7. 단계별 보고
 
@@ -92,6 +81,6 @@
 ## 산출물
 
 - 성공적으로 푸시된 최신 커밋 해시.
-- (선택) 배포 워크플로 실행 ID와 로그 URL (`runDeployment === true`인 경우).
+- (선택) 배포 워크플로 실행 ID와 로그 URL.
 - 테스트, pull, add/commit, push, deploy 단계별 수행 결과 요약.
 - `doc/deploy/log.md`에 날짜별로 추가된 배포 로그.
