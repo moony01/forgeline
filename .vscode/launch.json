@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch forgeline-app",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter forgeline-app dev",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "presentation": {
+        "group": "forgeline",
+        "order": 1
+      }
+    },
+    {
+      "name": "Launch forgeline-brief",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter forgeline-brief dev",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "presentation": {
+        "group": "forgeline",
+        "order": 2
+      }
+    }
+  ]
+}

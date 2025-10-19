@@ -76,6 +76,12 @@ jobs:
         uses: actions/checkout@v4
       # ... (pnpm, node.js 설치)
 
+      - name: Install Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
+
+      - name: 의존성 설치
+        run: pnpm install
+
       # 1. 최종 배포물을 담을 staging 디렉터리 생성
       - name: Create staging directory
         run: mkdir -p staging
@@ -98,13 +104,33 @@ jobs:
 
       # 4. 통합된 staging 디렉터리를 아티팩트로 업로드
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'staging'
 
       # 5. 아티팩트 배포
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
+```
+
+### 3.3. 네이티브 모듈 빌드 환경 설정
+
+리눅스 기반의 CI/CD 실행 환경(예: GitHub Actions의 `ubuntu-latest`)에서 `esbuild`, `@parcel/watcher`와 같이 네이티브 코드를 포함하는 Node.js 모듈을 사용하려면, 해당 코드를 컴파일하기 위한 시스템 수준의 빌드 도구가 필요합니다.
+
+만약 이러한 도구가 없다면 `pnpm install` 과정에서 `Cannot find native binding` 오류가 발생할 수 있습니다.
+
+이를 해결하려면 의존성 설치 전에 `build-essential`(g++, make 등 포함), `python3` 등의 패키지를 설치하는 단계를 워크플로에 명시적으로 추가해야 합니다.
+
+또한, `pnpm` 환경에서 네이티브 의존성 빌드 스크립트가 정상적으로 실행되도록 `package.json`에 다음과 같이 설정을 추가하는 것이 권장됩니다.
+
+```json
+// package.json
+"pnpm": {
+  "onlyBuiltDependencies": [
+    "esbuild",
+    "@parcel/watcher"
+  ]
+}
 ```
 
 ## 4. 전체 배포 워크플로우 (End-to-End)

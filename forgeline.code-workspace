@@ -1,0 +1,43 @@
+{
+  // ===================================================================
+  // Forgeline 프로젝트 VS Code 워크스페이스 설정
+  // -------------------------------------------------------------------
+  // 이 파일은 프로젝트의 모든 개발자가 일관된 개발 환경을 공유하도록
+  // (코드 스타일, 추천 확장 프로그램, 파일 숨김 등) 돕습니다.
+  // ===================================================================
+
+  // --- 워크스페이스 폴더 정의 ---
+  // VS Code 탐색기에 표시될 프로젝트의 루트 폴더를 지정합니다.
+  "folders": [
+    {
+      "name": "Forgeline",
+      "path": ".",
+    },
+  ],
+
+  // --- VS Code 편집기 및 환경 설정 ---
+  "settings": {
+    // 워크벤치 UI/UX 설정
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.startupEditor": "none",
+
+    // 파일 탐색기 및 자동 저장 설정
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true,
+    },
+    "files.autoSave": "onWindowChange",
+
+    // 에디터 포맷팅 및 탭 설정 (2-space)
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+  },
+
+  // --- 추천 확장 프로그램 ---
+  // 이 프로젝트 개발에 유용한 VS Code 확장 프로그램을 추천하여
+  // 개발 환경 통일을 돕습니다. (Vue, ESLint, Prettier)
+  "extensions": {
+    "recommendations": ["Vue.volar", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+  },
+}
