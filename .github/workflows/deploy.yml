@@ -48,6 +48,20 @@ jobs:
       - name: Install Build Dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
 
+      - name: Parse deploy targets from commit message
+        id: deploy_targets
+        run: |
+          MESSAGE="${{ github.event.head_commit.message }}"
+          if [[ $MESSAGE =~ \[deploy:([^\]]+)\] ]]; then
+            TARGETS="${BASH_REMATCH[1]}"
+            echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+          else
+            echo "targets=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Remove incompatible lockfile
+        run: rm -f pnpm-lock.yaml
+
       - name: 의존성 설치
         run: pnpm install
 
@@ -59,19 +73,19 @@ jobs:
 
       # forgeline-brief 빌드 및 복사
       - name: Build forgeline-brief
-        if: needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:brief')
+        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: pnpm --filter forgeline-brief generate
       - name: Copy brief to staging
-        if: needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:brief')
+        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: mkdir -p staging/forgeline-brief && cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/
 
       # forgeline-app 빌드 및 복사 (SSG)
       # 현재는 gh-pages 배포만 고려하여 ssg로 빌드합니다.
       - name: Build forgeline-app (SSG)
-        if: needs.changes.outputs.app == 'true' || contains(github.event.head_commit.message, '[deploy:app')
+        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: pnpm --filter forgeline-app build:ssg
       - name: Copy app to staging
-        if: needs.changes.outputs.app == 'true' || contains(github.event.head_commit.message, '[deploy:app')
+        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: mkdir -p staging/forgeline-app && cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/
 
       - name: 통합된 staging 디렉터리를 아티팩트로 업로드

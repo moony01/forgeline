@@ -76,3 +76,167 @@ changes:
 2.  `changes` Job의 `outputs` 섹션은 이 **중간 결과물**을 참조하여,
 3.  다른 Job이 사용할 수 있는 **최종 보고서**를 만듭니다.
 4.  이후 `build-and-deploy` Job은 `needs.changes.outputs.app`이라는 주소로 이 "최종 보고서"를 조회하여 사용하는 것입니다.
+
+---
+
+## 5. 통합 배포 워크플로우 분석 (`deploy.yml`)
+
+이제 앞에서 학습한 개념들을 바탕으로 우리 프로젝트의 실제 배포 워크플로우(`.github/workflows/deploy.yml`)를 한 줄씩 분석해 보겠습니다.
+
+```yaml
+name: Unified Monorepo Deploy
+```
+
+- **`name`**: 워크플로우의 이름입니다. GitHub Actions 탭에서 이 이름으로 표시됩니다.
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+```
+
+- **`on`**: 어떤 이벤트가 발생했을 때 이 워크플로우를 실행할지 정의합니다.
+- **`push` / `branches: - main`**: `main` 브랜치에 `push` 이벤트가 발생할 때마다 워크플로우가 실행됩니다.
+
+```yaml
+jobs:
+  changes: ...
+  build-and-deploy: ...
+```
+
+- **`jobs`**: 워크플로우를 구성하는 작업(Job)들의 목록입니다. 우리 워크플로우는 `changes`와 `build-and-deploy`라는 두 개의 Job으로 구성되어 있으며, 이들은 순차적으로 실행됩니다.
+
+### 5.1. `changes` Job: 변경 사항 감지
+
+이 Job의 유일한 목적은 모노레포 내의 어떤 패키지(`forgeline-app` 또는 `forgeline-brief`)에서 변경이 발생했는지 감지하여 그 결과를 "최종 보고서(`outputs`)"로 만드는 것입니다.
+
+```yaml
+changes:
+  runs-on: ubuntu-latest
+  outputs:
+    app: ${{ steps.filter.outputs.app }}
+    brief: ${{ steps.filter.outputs.brief }}
+```
+
+- **`runs-on`**: `ubuntu-latest` 리눅스 환경의 러너에서 이 Job을 실행합니다.
+- **`outputs`**: 이 Job의 "최종 보고서"를 정의합니다. `app`과 `brief`라는 두 개의 보고서 항목이 있으며, 각각의 값은 `filter` 스텝의 "중간 결과물"로 채워집니다.
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: dorny/paths-filter@v2
+    id: filter
+    with:
+      filters: |
+        app:
+          - 'packages/forgeline-app/**'
+        brief:
+          - 'packages/forgeline-brief/**'
+```
+
+- **`steps`**: Job이 수행할 단계들의 목록입니다.
+- **`uses: actions/checkout@v4`**: 프로젝트 코드를 러너 안으로 내려받습니다.
+- **`uses: dorny/paths-filter@v2`**: `paths-filter` 액션을 사용하여 변경된 파일 경로를 확인합니다.
+  - `filters`: `packages/forgeline-app/` 또는 `packages/forgeline-brief/` 경로에 변경이 있었는지 검사하도록 필터를 설정합니다.
+  - 검사 결과는 `app`, `brief` 라는 이름의 "중간 결과물(`steps.filter.outputs`)"로 메모리에 저장됩니다. (변경된 경우 `true`, 아니면 `false`)
+
+### 5.2. `build-and-deploy` Job: 빌드 및 배포
+
+이 Job은 `changes` Job의 결과를 바탕으로 실제 빌드와 배포를 수행합니다.
+
+```yaml
+build-and-deploy:
+  needs: changes
+```
+
+- **`needs: changes`**: 이 Job이 `changes` Job에 의존함을 선언합니다. `changes` Job이 성공적으로 끝나야만 이 Job이 실행되며, `needs.changes.outputs`를 통해 `changes` Job의 "최종 보고서"에 접근할 수 있습니다.
+
+```yaml
+if: |
+  !contains(github.event.head_commit.message, '[no-deploy]') &&
+  (needs.changes.outputs.app == 'true' || needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:'))
+```
+
+- **`if`**: 이 Job의 실행 조건을 정의합니다. 아래 조건들이 모두 참일 때만 실행됩니다.
+  1.  커밋 메시지에 `[no-deploy]` 문자열이 **없어야 합니다.**
+  2.  `changes` Job의 결과 `app`이 `true`이거나, `brief`가 `true`이거나, 또는 커밋 메시지에 `[deploy:` 문자열이 **포함되어야 합니다.** (수동 배포 트리거)
+
+```yaml
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+```
+
+- **`permissions`**: 이 Job이 GitHub API를 사용할 때 필요한 권한을 설정합니다. `pages: write`와 `id-token: write`는 GitHub Pages에 배포하기 위해 필수적인 권한입니다.
+
+```yaml
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
+```
+
+- **`Checkout`**: 다시 한번 코드를 내려받습니다. (각 Job은 독립된 러너에서 실행되므로 코드를 다시 받아야 합니다.)
+
+```yaml
+- name: pnpm 설치
+  uses: pnpm/action-setup@v3
+  with: { version: 8 }
+
+- name: Node.js 설치
+  uses: actions/setup-node@v4
+  with: { node-version: '18', cache: 'pnpm' }
+```
+
+- **`pnpm 설치` 및 `Node.js 설치`**: `pnpm`과 `Node.js`를 러너에 설치합니다. `cache: 'pnpm'` 설정은 다운로드한 의존성을 캐싱하여 다음 실행 시 속도를 향상시킵니다.
+
+```yaml
+- name: Install Build Dependencies
+  run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
+```
+
+- **`Install Build Dependencies`**: `pnpm install` 과정에서 네이티브 모듈 컴파일이 필요할 경우를 대비해, `build-essential`(C/C++ 컴파일러 모음)과 `python`을 설치합니다. **(바로 이 부분이 우리가 겪고 있는 에러와 관련이 깊습니다.)**
+
+```yaml
+- name: 의존성 설치
+  run: pnpm install
+```
+
+- **`의존성 설치`**: `pnpm install` 명령으로 프로젝트의 모든 의존성을 설치합니다.
+
+```yaml
+- name: 최종 배포물을 담을 staging 디렉터리 생성
+  run: mkdir -p staging
+- name: 루트 index.html을 staging으로 복사
+  run: cp index.html staging/
+```
+
+- **`staging` 디렉터리 관련**: 여러 패키지의 빌드 결과물을 한곳에 모아 배포하기 위한 `staging`이라는 임시 폴더를 생성하고, 공통 `index.html` 파일을 복사해둡니다.
+
+```yaml
+- name: Build forgeline-brief
+  if: needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:brief')
+  run: pnpm --filter forgeline-brief generate
+- name: Copy brief to staging
+  if: ...
+  run: mkdir -p staging/forgeline-brief && cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/
+```
+
+- **`forgeline-brief` 빌드 및 복사**: `if` 조건에 따라 `forgeline-brief` 패키지에 변경이 있었거나 수동 배포가 트리거된 경우에만 빌드(`generate`)를 수행하고, 그 결과물을 `staging/forgeline-brief` 폴더로 복사합니다. `forgeline-app`도 동일한 구조로 동작합니다.
+
+```yaml
+- name: 통합된 staging 디렉터리를 아티팩트로 업로드
+  uses: actions/upload-pages-artifact@v3
+  with:
+    path: 'staging'
+```
+
+- **`아티팩트로 업로드`**: `upload-pages-artifact` 액션을 사용하여 `staging` 디렉터리 전체를 GitHub Pages가 인식할 수 있는 특별한 형태의 압축 파일(아티팩트)로 만듭니다.
+
+```yaml
+- name: GitHub Pages에 배포
+  uses: actions/deploy-pages@v2
+```
+
+- **`GitHub Pages에 배포`**: `deploy-pages` 액션이 이전 단계에서 생성된 아티팩트를 가져와 GitHub Pages 서비스에 최종적으로 배포합니다.

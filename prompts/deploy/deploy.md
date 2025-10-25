@@ -8,10 +8,10 @@
 ## 입력 파라미터
 
 - `targetBranch`: `main` -> 푸시할 Git 브랜치명 (예: `main`, `develop`).
-- `deploymentTarget`: `'auto'` -> 배포 실행 방식을 지정합니다.
+- `deploymentTarget`: `forgeline-app`, `forgeline-brief` -> 배포 실행 방식을 지정합니다.
   - `'auto'`: 커밋 메시지에 별도 태그를 추가하지 않습니다. CI/CD는 변경된 파일을 감지하여 **자동으로 배포**합니다.
   - `'none'`: 커밋 메시지에 `[no-deploy]` 태그를 추가합니다. CI/CD는 **배포를 실행하지 않습니다.**
-  - `'app-gh-pages'`, `'brief-gh-pages'` 등: 커밋 메시지에 `[deploy:타겟]` 태그를 추가하여 **수동으로 배포를 강제**합니다.
+  - `'forgeline-app'`, `'forgeline-brief'`, `'all'` 등: 커밋 메시지에 `[deploy:타겟]` 태그를 추가하여 **수동으로 배포를 강제**합니다. 여러 대상을 지정하려면 쉼표로 구분합니다 (예: `'forgeline-app,forgeline-brief'`).
 
 ## 절차 개요
 
@@ -46,7 +46,7 @@
 - `deploymentTarget` 값에 따라 커밋 메시지 끝에 다음 태그 중 하나를 추가합니다:
   - `deploymentTarget` == `'none'`: `[no-deploy]` 태그를 추가합니다.
   - `deploymentTarget` == `'auto'`: 아무 태그도 추가하지 않습니다.
-  - `deploymentTarget`이 그 외의 값 (예: `'app-gh-pages'`): `[deploy:{deploymentTarget}]` 태그를 추가합니다.
+  - `deploymentTarget`이 그 외의 값 (예: `'forgeline-app'`): `[deploy:{deploymentTarget}]` 태그를 추가합니다.
 - 위 규칙에 따라 생성된 커밋 메시지로 **코드 변경 사항만 먼저 커밋**합니다.
 
 ### 4. 산출물 기록 및 커밋 수정
