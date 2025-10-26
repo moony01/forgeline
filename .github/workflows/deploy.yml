@@ -39,7 +39,7 @@ jobs:
 
       - name: pnpm 설치
         uses: pnpm/action-setup@v3
-        with: { version: 8 }
+        with: { version: latest }
 
       - name: Node.js 설치
         uses: actions/setup-node@v4
@@ -65,7 +65,7 @@ jobs:
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
       - name: 의존성 설치
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
