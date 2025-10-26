@@ -67,6 +67,9 @@ jobs:
       - name: 의존성 설치
         run: pnpm install --frozen-lockfile
 
+      - name: 네이티브 모듈 강제 재빌드
+        run: pnpm rebuild oxc-parser
+
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
 
