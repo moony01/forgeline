@@ -1,4 +1,4 @@
-# Repository Push & Conditional Deploy Prompt
+﻿# Repository Push & Conditional Deploy Prompt
 
 ## 목적
 
@@ -42,7 +42,7 @@
 
 - `git status --short`로 변경 파일 확인 후 사용자에게 간단 보고합니다.
 - 필요한 파일만 `git add`로 스테이징합니다.
-- 커밋 메시지는 **'영문 타입: 한글 설명'** 형식으로 작성합니다.
+- 커밋 메시지는 **Conventional Commits** 규칙을 따라 `fix: ...`, `feat: ...`, `chore: ...`처럼 `영문 타입: 한글 설명` 형식으로 작성합니다.
 - `deploymentTarget` 값에 따라 커밋 메시지 끝에 다음 태그 중 하나를 추가합니다:
   - `deploymentTarget` == `'none'`: `[no-deploy]` 태그를 추가합니다.
   - `deploymentTarget` == `'auto'`: 아무 태그도 추가하지 않습니다.
@@ -72,6 +72,7 @@
 
 - 실제 배포 로직은 GitHub Actions에 의해 커밋 메시지 태그에 따라 자동으로 처리됩니다.
 - 에이전트는 배포의 성공/실패 여부를 확인하고 로그를 업데이트하는 역할만 수행합니다.
+- `[deploy:all]` 태그를 사용하면 `.github/workflows/deploy.yml` 워크플로가 `forgeline-app`과 `forgeline-brief` 두 패키지를 동시에 배포하도록 트리거됩니다.
 
 ### 7. 단계별 보고
 
