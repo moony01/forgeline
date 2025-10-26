@@ -68,7 +68,7 @@ jobs:
         run: pnpm install --ignore-scripts
 
       - name: Nuxt 프로젝트 준비
-        run: pnpm exec -r nuxt prepare
+        run: pnpm -r exec nuxt prepare
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
