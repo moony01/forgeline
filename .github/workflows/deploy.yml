@@ -64,6 +64,9 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
+      - name: Set pnpm config to avoid mismatch
+        run: pnpm config set only-built-dependencies false
+
       - name: 의존성 설치
         run: pnpm install --frozen-lockfile
 
