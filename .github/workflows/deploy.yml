@@ -64,11 +64,8 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      - name: 의존성 설치 (스크립트 제외)
-        run: pnpm install --ignore-scripts
-
-      - name: Nuxt 프로젝트 준비
-        run: pnpm -r exec nuxt prepare
+      - name: 의존성 설치
+        run: pnpm install --no-frozen-lockfile
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging

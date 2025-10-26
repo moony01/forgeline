@@ -23,7 +23,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.26.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@oxc-parser/binding-linux-x64-gnu": "0.95.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
