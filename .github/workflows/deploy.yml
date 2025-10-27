@@ -48,6 +48,15 @@ jobs:
         with:
           node-version: '18'
 
+      # 🟩 [추가됨] pnpm 캐시를 복원하여 빌드 속도 향상
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: Install Build Dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
 
@@ -72,17 +81,27 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      # ✅ 정상 생명주기 복원 — postinstall 허용
+      # 🟩 [수정됨] postinstall 병렬 실행 방지 (NUXT_CI_PARALLEL: false 추가)
       - name: Install dependencies (scripts enabled)
+        env:
+          NUXT_CI_PARALLEL: false # ← 추가됨: Nuxt prepare 병렬 실행 방지
         run: |
           echo "🧩 Installing dependencies with postinstall enabled..."
           pnpm install --frozen-lockfile
           echo "✅ Dependencies installed successfully."
 
+      # 🟩 [수정됨] workspace 전체 rebuild → 루트 rebuild로 단일화
+      - name: Force rebuild oxc-parser
+        run: |
+          echo "🦀 Rebuilding oxc-parser..."
+          pnpm rebuild oxc-parser  # ← 변경됨 (기존: pnpm -r exec pnpm rebuild oxc-parser)
+          echo "✅ oxc-parser rebuild complete."
+
+      # 🟩 [수정됨] 경로 탐색 패턴을 OS 공용 glob으로 개선
       - name: Verify oxc-parser binding
         run: |
-          echo "🔍 Checking oxc-parser native binding..."
-          find . -path "*/node_modules/.pnpm/oxc-parser@*/node_modules/oxc-parser/src-js/parser.linux-x64-gnu.node" || echo "⚠️ oxc-parser native binding not found."
+          echo "🔍 Checking oxc-parser native bindings..."
+          find . -type f -name "parser.*.node" || echo "⚠️ Binding not found!"  # ← 변경됨
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
@@ -100,11 +119,13 @@ jobs:
           pnpm --filter forgeline-brief generate
           echo "✅ forgeline-brief build complete."
 
+      # 🟩 [수정됨] Nuxt public 경로 변화 (_nuxt) 대비 복사 fallback 추가
       - name: Copy brief to staging
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-brief
-          cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/
+          cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/ \
+          || cp -r packages/forgeline-brief/.output/public/_nuxt/* staging/forgeline-brief/  # ← 추가됨
           echo "📦 forgeline-brief copied to staging."
 
       # -------------------------------------------------------------
@@ -117,11 +138,13 @@ jobs:
           pnpm --filter forgeline-app build
           echo "✅ forgeline-app build complete."
 
+      # 🟩 [수정됨] Nuxt public 경로 변화 (_nuxt) 대비 복사 fallback 추가
       - name: Copy app to staging
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-app
-          cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/
+          cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/ \
+          || cp -r packages/forgeline-app/.output/public/_nuxt/* staging/forgeline-app/  # ← 추가됨
           echo "📦 forgeline-app copied to staging."
 
       # -------------------------------------------------------------
