@@ -81,27 +81,21 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      # 🟩 [수정됨] postinstall 병렬 실행 방지 (NUXT_CI_PARALLEL: false 추가)
-      - name: Install dependencies (scripts enabled)
-        env:
-          NUXT_CI_PARALLEL: false # ← 추가됨: Nuxt prepare 병렬 실행 방지
+      # ✅ 수정
+      - name: Install dependencies (skip scripts)
         run: |
-          echo "🧩 Installing dependencies with postinstall enabled..."
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --ignore-scripts
           echo "✅ Dependencies installed successfully."
 
-      # 🟩 [수정됨] workspace 전체 rebuild → 루트 rebuild로 단일화
       - name: Force rebuild oxc-parser
         run: |
-          echo "🦀 Rebuilding oxc-parser..."
-          pnpm rebuild oxc-parser  # ← 변경됨 (기존: pnpm -r exec pnpm rebuild oxc-parser)
+          pnpm rebuild oxc-parser
           echo "✅ oxc-parser rebuild complete."
 
-      # 🟩 [수정됨] 경로 탐색 패턴을 OS 공용 glob으로 개선
-      - name: Verify oxc-parser binding
+      - name: Run Nuxt prepare manually
         run: |
-          echo "🔍 Checking oxc-parser native bindings..."
-          find . -type f -name "parser.*.node" || echo "⚠️ Binding not found!"  # ← 변경됨
+          pnpm -r exec nuxt prepare
+          echo "✅ Nuxt prepare completed manually."
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
