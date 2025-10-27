@@ -28,7 +28,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
-      "@parcel/watcher"
+      "@parcel/watcher",
+      "oxc-parser"
     ]
   },
   "packageManager": "pnpm@10.18.1"

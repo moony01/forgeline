@@ -33,17 +33,20 @@ jobs:
       contents: read
       pages: write
       id-token: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: pnpm 설치
         uses: pnpm/action-setup@v3
-        with: { version: latest }
+        with:
+          version: latest
 
       - name: Node.js 설치
         uses: actions/setup-node@v4
-        with: { node-version: '18' }
+        with:
+          node-version: '18'
 
       - name: Install Build Dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
@@ -69,14 +72,17 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      - name: 의존성 설치 (스크립트 무시)
-        run: pnpm install --frozen-lockfile --ignore-scripts
+      # ✅ 정상 생명주기 복원 — postinstall 허용
+      - name: Install dependencies (scripts enabled)
+        run: |
+          echo "🧩 Installing dependencies with postinstall enabled..."
+          pnpm install --frozen-lockfile
+          echo "✅ Dependencies installed successfully."
 
-      - name: 네이티브 모듈 강제 재빌드
-        run: pnpm rebuild oxc-parser
-
-      - name: Post-install 스크립트 실행
-        run: pnpm -r run postinstall
+      - name: Verify oxc-parser binding
+        run: |
+          echo "🔍 Checking oxc-parser native binding..."
+          find . -path "*/node_modules/.pnpm/oxc-parser@*/node_modules/oxc-parser/src-js/parser.linux-x64-gnu.node" || echo "⚠️ oxc-parser native binding not found."
 
       - name: 최종 배포물을 담을 staging 디렉터리 생성
         run: mkdir -p staging
@@ -84,23 +90,43 @@ jobs:
       - name: 루트 index.html을 staging으로 복사
         run: cp index.html staging/
 
+      # -------------------------------------------------------------
       # forgeline-brief 빌드 및 복사
+      # -------------------------------------------------------------
       - name: Build forgeline-brief
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
-        run: pnpm --filter forgeline-brief generate
+        run: |
+          echo "🚀 Building forgeline-brief..."
+          pnpm --filter forgeline-brief generate
+          echo "✅ forgeline-brief build complete."
+
       - name: Copy brief to staging
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
-        run: mkdir -p staging/forgeline-brief && cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/
+        run: |
+          mkdir -p staging/forgeline-brief
+          cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/
+          echo "📦 forgeline-brief copied to staging."
 
-      # forgeline-app 빌드 및 복사 (SSG)
-      # 현재는 gh-pages 배포만 고려하여 ssg로 빌드합니다.
-      - name: Build forgeline-app (SSG)
+      # -------------------------------------------------------------
+      # forgeline-app 빌드 및 복사 (Nuxt4 SSG)
+      # -------------------------------------------------------------
+      - name: Build forgeline-app
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
-        run: pnpm --filter forgeline-app build:ssg
+        run: |
+          echo "🚀 Building forgeline-app..."
+          pnpm --filter forgeline-app build
+          echo "✅ forgeline-app build complete."
+
       - name: Copy app to staging
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
-        run: mkdir -p staging/forgeline-app && cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/
+        run: |
+          mkdir -p staging/forgeline-app
+          cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/
+          echo "📦 forgeline-app copied to staging."
 
+      # -------------------------------------------------------------
+      # GitHub Pages 업로드 및 배포
+      # -------------------------------------------------------------
       - name: 통합된 staging 디렉터리를 아티팩트로 업로드
         uses: actions/upload-pages-artifact@v3
         with:
