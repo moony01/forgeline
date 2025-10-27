@@ -44,11 +44,12 @@
 
 - `git status --short`로 변경 파일 확인 후 사용자에게 간단 보고합니다.
 - 필요한 파일만 `git add`로 스테이징합니다.
-- 커밋 메시지는 **Conventional Commits** 규칙을 따라 `fix: ...`, `feat: ...`, `chore: ...`처럼 `영문 타입: 한글 설명` 형식으로 작성합니다.
-- `deploymentTarget` 값에 따라 커밋 메시지 끝에 다음 태그 중 하나를 추가합니다:
-  - `deploymentTarget` == `'none'`: `[no-deploy]` 태그를 추가합니다.
-  - `deploymentTarget` == `'auto'`: 아무 태그도 추가하지 않습니다.
-  - `deploymentTarget`이 그 외의 값 (예: `'forgeline-app'`): `[deploy:{deploymentTarget}]` 태그를 추가합니다.
+- 커밋 메시지는 **Conventional Commits** 규칙을 따르며, 제목의 전체 형식은 `타입(스코프): 한글 설명 [배포태그]` 입니다.
+  - 예시: `fix(ci): CI 빌드 오류 수정 [deploy:all]`
+- `deploymentTarget` 값에 따라 위의 `[배포태그]` 부분이 결정됩니다.
+  - `deploymentTarget` == `'none'`: `[no-deploy]`
+  - `deploymentTarget` == `'auto'`: 태그 없음
+  - `deploymentTarget`이 그 외의 값: `[deploy:{deploymentTarget}]`
 - 위 규칙에 따라 생성된 커밋 메시지로 **코드 변경 사항만 먼저 커밋**합니다.
 
 ### 4. 산출물 기록 및 커밋 수정 (선택 사항)
