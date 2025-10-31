@@ -1,85 +1,86 @@
-# 🤖 AGENTS.md — Agent Instruction for Codex CLI
+# 🤖 AGENTS.md — Codex CLI 에이전트 지침
 
-## 🔧 Agent Role
+## 🔧 에이전트 역할
 
-You are a Codex CLI agent operating within the WebAutoline automation framework.
+당신은 WebAutoline 자동화 프레임워크 내에서 작동하는 Codex CLI 에이전트입니다.
 
-Your task is to interpret structured instructions from either:
+당신의 임무는 다음 두 가지 방법으로 제공되는 구조화된 지침을 해석하는 것입니다:
 
-1. Inline user input (CLI command), or
-2. `.prompt.txt` / `.md` files located in the `/prompts/` directory.
+1. 인라인 사용자 입력 (CLI 명령어)
+2. `/prompts/` 디렉토리에 위치한 `.prompt.txt` 또는 `.md` 파일
 
-You perform automated **code generation**, **file creation**, **modification**, and **deployment tasks** within the monorepo.
+당신은 모노레포 내에서 자동화된 **코드 생성**, **파일 생성**, **수정**, **배포** 작업을 수행합니다.
 
 ---
 
-## 🧙‍♂️ Prompt Directory Structure
+## 🧙‍♂️ 프롬프트 디렉토리 구조
 
 ```
 /prompts/
-├── design/                # 🎨 Design-related automation (Figma MCP, design-to-code)
-│   ├── figma/             # Figma MCP integration
-│   ├── convert/           # Figma → Code conversion
-│   └── docs/              # Design system / style guide documentation
+├── design/                # 🎨 디자인 관련 자동화 (Figma MCP, 디자인-코드 변환)
+│   ├── figma/             # Figma MCP 통합
+│   ├── convert/           # Figma → 코드로 변환
+│   └── docs/              # 디자인 시스템 / 스타일 가이드 문서
 │
-├── dev/                   # 💻 Development-related automation
-│   ├── frontend/          # Frontend (Vue/Nuxt) tasks
-│   └── backend/           # Backend / API tasks
+├── dev/                   # 💻 개발 관련 자동화
+│   ├── frontend/          # 프론트엔드 (Vue/Nuxt) 작업
+│   └── backend/           # 백엔드 / API 작업
 │
-└── deploy/                # 🚀 CI/CD & deployment automation
+└── deploy/                # 🚀 CI/CD 및 배포 자동화
 ```
 
 ---
 
-## 📂 Key Directories
+## 📂 주요 디렉토리
 
 - **`prompts/`**
-  - Entry point for all instructions.
-  - Contains categorized prompt sets (`design`, `dev`, `deploy`).
+  - 모든 지침의 진입점입니다.
+  - 분류된 프롬프트 세트(`design`, `dev`, `deploy`)를 포함합니다.
 
 - **`doc/`**
-  - Knowledge base (architecture, naming, workflows).
-  - Use only when a prompt lacks sufficient context.
+  - 지식 기반 (아키텍처, 명명 규칙, 워크플로우).
+  - 프롬프트에 충분한 컨텍스트가 없을 때만 참조하세요.
 
 - **`packages/`**
-  - Contains reusable packages, modules, and frameworks.
-  - Includes:
-    - `forgeline-app` (Nuxt SSR/CSR framework boilerplate)
-    - `forgeline-brief` (Brief input UI)
-    - `forgeline-modules` (Shared schemas, services, UI components)
+  - 재사용 가능한 패키지, 모듈, 프레임워크를 포함합니다.
+  - 포함 항목:
+    - `forgeline-app` (Nuxt SSR/CSR 프레임워크 보일러플레이트)
+    - `forgeline-brief` (브리프 입력 UI)
+    - `forgeline-modules` (공유 스키마, 서비스, UI 컴포넌트)
 
 - **`core/`**
-  - Contains core logic, automation tools, and services.
-  - Includes:
-    - Automation scripts (CI/CD)
-    - MCP Server
+  - 핵심 로직, 자동화 도구, 서비스를 포함합니다.
+  - 포함 항목:
+    - 자동화 스크립트 (CI/CD)
+    - MCP 서버
 
 - **`apps/`**
-  - Contains the final, user-facing applications built from the packages.
+  - 패키지로부터 빌드된 최종 사용자용 애플리케이션을 포함합니다.
 
 ---
 
-## 🧭 Execution Rules
+## 🧭 실행 규칙
 
-1. Execute inline CLI instructions or read referenced `@prompts/*.md` files.
-2. If no input is provided, process the latest `.prompt.txt` in `/prompts/`.
-3. Reference `doc/` for additional context when needed.
-4. Apply all outputs strictly within `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
+1. 인라인 CLI 지침을 실행하거나 참조된 `@prompts/*.md` 파일을 읽어 실행합니다.
+2. 입력이 제공되지 않으면 `/prompts/` 디렉토리의 최신 `.prompt.txt` 파일을 처리합니다.
+3. 필요 시 추가 컨텍스트를 위해 `doc/` 디렉토리를 참조합니다.
+4. 모든 출력물은 `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/` 내에만 엄격히 적용해야 합니다.
 
-> ⚠️ Never modify files outside `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
-
----
-
-## 🗣️ Language Guideline (Korean Response Policy)
-
-- All **analyses, explanations, code comments, and generated documents** must be written **in Korean**.
-- English technical terms (e.g., AWS Lambda, Nuxt3) may remain unchanged.
-- Code comments (`//`, `/** ... */`) must be in Korean.
-- Pure code content can remain in English.
+> ⚠️ `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/` 디렉토리 외부의 파일은 절대 수정하지 마세요.
 
 ---
 
-✅ **Summary:**  
-Codex CLI supports both inline commands and prompt files located under  
-`/prompts/design/`, `/prompts/dev/`, and `/prompts/deploy/`.  
-All outputs must follow the Korean language policy and be saved under `/packages/`, `/prompts/`. `/doc/`.
+## 🗣️ 언어 지침 (한국어 응답 정책)
+
+- 모든 **분석, 설명, 코드 주석, 생성된 문서**는 **한국어**로 작성해야 합니다.
+- 영어 기술 용어(예: AWS Lambda, Nuxt3)는 변경하지 않고 그대로 사용할 수 있습니다.
+- 코드 주석(`//`, `/** ... */`)은 반드시 한국어로 작성해야 합니다.
+- AI 에이전트가 코드를 작성하거나 수정할 때는 코드의 목적, 주요 로직, 변경 사항에 대해 설명하는 상세한 주석을 반드시 추가해야 합니다.
+- 순수 코드 내용은 영어로 유지할 수 있습니다.
+
+---
+
+✅ **요약:**
+Codex CLI는 인라인 명령어와 아래 경로에 위치한 프롬프트 파일을 모두 지원합니다.
+`/prompts/design/`, `/prompts/dev/`, and `/prompts/deploy/`.
+모든 결과물은 한국어 응답 정책을 따라야 하며, `/packages/`, `/prompts/`, `/doc/` 아래에 저장되어야 합니다.

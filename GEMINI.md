@@ -1,80 +1,81 @@
-# ♊️ GEMINI.md — Gemini Agent Instructions
+# ♊️ GEMINI.md — Gemini 에이전트 지침
 
-## 🔧 Agent Role
+## 🔧 에이전트 역할
 
-You are Gemini, a large language model built by Google. You are operating as an interactive CLI agent specializing in software engineering tasks.
+당신은 Google에서 만든 대규모 언어 모델인 Gemini입니다. 당신은 소프트웨어 엔지니어링 작업을 전문으로 하는 대화형 CLI 에이전트로 작동합니다.
 
-Your primary goal is to assist users by executing tasks like code generation, file manipulation, and project management, based on the context of the current project and the specific instructions outlined in this document.
+당신의 주요 목표는 현재 프로젝트의 컨텍스트와 이 문서에 설명된 특정 지침을 기반으로 코드 생성, 파일 조작, 프로젝트 관리와 같은 작업을 실행하여 사용자를 지원하는 것입니다.
 
 ---
 
-## 🧙‍♂️ Prompt Directory Structure
+## 🧙‍♂️ 프롬프트 디렉토리 구조
 
 ```
 /prompts/
-├── design/                # 🎨 Design-related automation (Figma MCP, design-to-code)
-│   ├── figma/             # Figma MCP integration
-│   ├── convert/           # Figma → Code conversion
-│   └── docs/              # Design system / style guide documentation
+├── design/                # 🎨 디자인 관련 자동화 (Figma MCP, 디자인-코드 변환)
+│   ├── figma/             # Figma MCP 통합
+│   ├── convert/           # Figma → 코드로 변환
+│   └── docs/              # 디자인 시스템 / 스타일 가이드 문서
 │
-├── dev/                   # 💻 Development-related automation
-│   ├── frontend/          # Frontend (Vue/Nuxt) tasks
-│   └── backend/           # Backend / API tasks
+├── dev/                   # 💻 개발 관련 자동화
+│   ├── frontend/          # 프론트엔드 (Vue/Nuxt) 작업
+│   └── backend/           # 백엔드 / API 작업
 │
-└── deploy/                # 🚀 CI/CD & deployment automation
+└── deploy/                # 🚀 CI/CD 및 배포 자동화
 ```
 
 ---
 
-## 📂 Key Directories
+## 📂 주요 디렉토리
 
 - **`prompts/`**
-  - Entry point for all instructions.
-  - Contains categorized prompt sets (`design`, `dev`, `deploy`).
+  - 모든 지침의 진입점입니다.
+  - 분류된 프롬프트 세트(`design`, `dev`, `deploy`)를 포함합니다.
 
 - **`doc/`**
-  - Knowledge base (architecture, naming, workflows).
-  - Use only when a prompt lacks sufficient context.
+  - 지식 기반 (아키텍처, 명명 규칙, 워크플로우).
+  - 프롬프트에 충분한 컨텍스트가 없을 때만 참조하세요.
 
 - **`packages/`**
-  - Contains reusable packages, modules, and frameworks.
-  - Includes:
-    - `forgeline-app` (Nuxt SSR/CSR framework boilerplate)
-    - `forgeline-brief` (Brief input UI)
-    - `forgeline-modules` (Shared schemas, services, UI components)
+  - 재사용 가능한 패키지, 모듈, 프레임워크를 포함합니다.
+  - 포함 항목:
+    - `forgeline-app` (Nuxt SSR/CSR 프레임워크 보일러플레이트)
+    - `forgeline-brief` (브리프 입력 UI)
+    - `forgeline-modules` (공유 스키마, 서비스, UI 컴포넌트)
 
 - **`core/`**
-  - Contains core logic, automation tools, and services.
-  - Includes:
-    - Automation scripts (CI/CD)
-    - MCP Server
+  - 핵심 로직, 자동화 도구, 서비스를 포함합니다.
+  - 포함 항목:
+    - 자동화 스크립트 (CI/CD)
+    - MCP 서버
 
 - **`apps/`**
-  - Contains the final, user-facing applications built from the packages.
+  - 패키지로부터 빌드된 최종 사용자용 애플리케이션을 포함합니다.
 
 ---
 
-## 🧭 Execution Rules
+## 🧭 실행 규칙
 
-1. Execute inline CLI instructions or read referenced `@prompts/*.md` files.
-2. If no input is provided, process the latest `.prompt.txt` in `/prompts/`.
-3. Reference `doc/` for additional context when needed.
-4. Apply all outputs strictly within `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
+1. 인라인 CLI 지침을 실행하거나 참조된 `@prompts/*.md` 파일을 읽어 실행합니다.
+2. 입력이 제공되지 않으면 `/prompts/` 디렉토리의 최신 `.prompt.txt` 파일을 처리합니다.
+3. 필요 시 추가 컨텍스트를 위해 `doc/` 디렉토리를 참조합니다.
+4. 모든 출력물은 `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/` 내에만 엄격히 적용해야 합니다.
 
-> ⚠️ Never modify files outside `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/`.
-
----
-
-## 🗣️ Language Guideline (Korean Response Policy)
-
-- All **analyses, explanations, code comments, and generated documents** must be written **in Korean**.
-- English technical terms (e.g., AWS Lambda, Nuxt3) may remain unchanged.
-- Code comments (`//`, `/** ... */`) must be in Korean.
-- Pure code content can remain in English.
+> ⚠️ `/apps/`, `/packages/`, `/core/`, `/prompts/`, `/doc/` 디렉토리 외부의 파일은 절대 수정하지 마세요.
 
 ---
 
-✅ **Summary:**  
-Codex CLI supports both inline commands and prompt files located under  
-`/prompts/design/`, `/prompts/dev/`, and `/prompts/deploy/`.  
-All outputs must follow the Korean language policy and be saved under `/packages/`, `/prompts/`. `/doc/`.
+## 🗣️ 언어 지침 (한국어 응답 정책)
+
+- 모든 **분석, 설명, 코드 주석, 생성된 문서**는 **한국어**로 작성해야 합니다.
+- 영어 기술 용어(예: AWS Lambda, Nuxt3)는 변경하지 않고 그대로 사용할 수 있습니다.
+- 코드 주석(`//`, `/** ... */`)은 반드시 한국어로 작성해야 합니다.
+- AI 에이전트가 코드를 작성하거나 수정할 때는 코드의 목적, 주요 로직, 변경 사항에 대해 설명하는 상세한 주석을 반드시 추가해야 합니다.
+- 순수 코드 내용은 영어로 유지할 수 있습니다.
+
+---
+
+✅ **요약:**
+Gemini는 인라인 명령어와 아래 경로에 위치한 프롬프트 파일을 모두 지원합니다.
+`/prompts/design/`, `/prompts/dev/`, and `/prompts/deploy/`.
+모든 결과물은 한국어 응답 정책을 따라야 하며, `/packages/`, `/prompts/`, `/doc/` 아래에 저장되어야 합니다.
