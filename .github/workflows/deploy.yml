@@ -1,19 +1,35 @@
-name: Unified Monorepo Deploy
+# 워크플로 이름: 모노레포 통합 배포
+name: 모노레포 통합 배포
 
+# 트리거 설정: main 브랜치에 push 이벤트가 발생했을 때 워크플로를 실행합니다.
 on:
   push:
     branches:
       - main
 
+# 실행될 작업(Job)들을 정의합니다.
 jobs:
+  # 'changes' 작업: 어떤 패키지(app, brief)에 변경이 있었는지 감지합니다.
   changes:
+    # 실행 환경: 최신 버전의 Ubuntu에서 실행됩니다.
+    name: 변경 사항 감지
     runs-on: ubuntu-latest
+    # 출력(outputs): 이 작업의 결과를 다른 작업에서 사용할 수 있도록 설정합니다.
     outputs:
       app: ${{ steps.filter.outputs.app }}
       brief: ${{ steps.filter.outputs.brief }}
+    # 단계(steps): 실제 작업들이 순차적으로 실행됩니다.
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      # 1단계: 코드 체크아웃
+      # actions/checkout@v4 액션을 사용하여 저장소의 코드를 워크플로 실행 환경으로 가져옵니다.
+      - name: 저장소 코드 체크아웃
+        uses: actions/checkout@v4
+
+      # 2단계: 변경된 파일 경로 필터링
+      # dorny/paths-filter@v2 액션을 사용하여 특정 경로의 파일 변경 여부를 감지합니다.
+      # 'app'과 'brief' 두 개의 필터를 정의하여 각 패키지 디렉토리의 변경을 추적합니다.
+      - name: 변경된 파일 경로 필터링
+        uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
@@ -22,50 +38,75 @@ jobs:
             brief:
               - 'packages/forgeline-brief/**'
 
+  # 'build-and-deploy' 작업: 코드를 빌드하고 GitHub Pages에 배포합니다.
   build-and-deploy:
+    name: 빌드 및 배포
+    # 의존성 설정: 'changes' 작업이 성공적으로 완료되어야 이 작업을 시작합니다.
     needs: changes
-    # [no-deploy] 태그가 없고, 변경된 파일이 있거나 수동 배포 태그가 있을 때 실행
+    # 실행 조건: 아래 조건 중 하나라도 참일 때 작업을 실행합니다.
+    # 1. 커밋 메시지에 [no-deploy] 태그가 없을 것
+    # 2. AND (
+    #      'app' 또는 'brief' 패키지에 변경이 있었거나,
+    #      OR 커밋 메시지에 [deploy:...] 태그가 포함되어 수동 배포가 요청되었을 경우
+    #    )
     if: |
       !contains(github.event.head_commit.message, '[no-deploy]') &&
       (needs.changes.outputs.app == 'true' || needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:'))
+    # 실행 환경: 최신 버전의 Ubuntu에서 실행됩니다.
     runs-on: ubuntu-latest
+    # 권한 설정: 워크플로가 GitHub API와 상호작용하는 데 필요한 권한을 부여합니다.
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: read  # 저장소 컨텐츠를 읽기 위한 권한
+      pages: write     # GitHub Pages에 쓰기 위한 권한
+      id-token: write  # OIDC(OpenID Connect) 토큰을 사용하기 위한 권한
 
+    # 단계(steps): 실제 작업들이 순차적으로 실행됩니다.
     steps:
-      - name: Checkout
+      # 1단계: 코드 체크아웃
+      - name: 저장소 코드 체크아웃
         uses: actions/checkout@v4
 
+      # 2단계: pnpm 설치
+      # pnpm/action-setup@v3 액션을 사용하여 pnpm 패키지 매니저를 설치합니다.
       - name: pnpm 설치
         uses: pnpm/action-setup@v3
         with:
-          version: latest
+          version: latest # 항상 최신 버전의 pnpm을 사용합니다.
 
-      - name: Node.js 설치
+      # 3단계: Node.js 설치
+      # actions/setup-node@v4 액션을 사용하여 특정 버전의 Node.js 환경을 설정합니다.
+      - name: Node.js 설치 (18.x 버전)
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18' # Node.js 18 버전을 사용합니다.
 
-      # 🟩 [추가됨] pnpm 캐시를 복원하여 빌드 속도 향상
-      - name: Cache pnpm store
+      # 4단계: pnpm 캐시 복원
+      # actions/cache@v3 액션을 사용하여 pnpm 저장소 캐시를 복원합니다.
+      # 의존성 설치 시간을 단축하여 빌드 속도를 향상시킵니다.
+      - name: pnpm 의존성 캐시 복원
         uses: actions/cache@v3
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.pnpm-store # 캐시할 pnpm 저장소 경로
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }} # 캐시 키: OS와 pnpm-lock.yaml 파일 해시를 조합하여 생성
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      - name: Install Build Dependencies
+      # 5단계: 빌드에 필요한 시스템 의존성 설치
+      # 'node-gyp'와 같은 네이티브 모듈 빌드에 필요한 build-essential, python3 등을 설치합니다.
+      - name: 빌드 필수 패키지 설치 (build-essential, python)
         run: sudo apt-get update && sudo apt-get install -y build-essential python3 python-is-python3
 
-      - name: Install Rust toolchain
+      # 6단계: Rust 툴체인 설치
+      # Rust 기반의 빌드 도구(예: SWC)를 사용하기 위해 Rust 안정화 버전을 설치합니다.
+      - name: Rust 툴체인 설치
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
 
-      - name: Parse deploy targets from commit message
+      # 7단계: 커밋 메시지에서 배포 대상 파싱
+      # 커밋 메시지에 포함된 [deploy:target] 태그를 분석하여 수동 배포 대상을 추출합니다.
+      # 결과는 'targets'라는 output으로 저장됩니다.
+      - name: 커밋 메시지에서 배포 대상 추출
         id: deploy_targets
         run: |
           MESSAGE="${{ github.event.head_commit.message }}"
@@ -76,78 +117,103 @@ jobs:
             echo "targets=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Ensure clean workspace
+      # 8단계: 작업 공간 정리
+      # 이전 빌드에서 남았을 수 있는 node_modules 디렉토리를 모두 삭제하여 깨끗한 상태에서 의존성을 설치합니다.
+      - name: 기존 node_modules 디렉토리 정리
         run: |
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      # ✅ 수정
-      - name: Install dependencies (skip scripts)
+      # 9단계: 의존성 설치 (스크립트 제외)
+      # pnpm install을 실행하여 모든 의존성을 설치합니다.
+      # --frozen-lockfile: pnpm-lock.yaml을 변경하지 않고 정확히 명시된 버전으로 설치합니다.
+      # --ignore-scripts: 의존성 설치 시 자동으로 실행되는 스크립트(postinstall 등)를 건너뜁니다.
+      - name: pnpm 의존성 설치 (스크립트 제외)
         run: |
           pnpm install --frozen-lockfile --ignore-scripts
           echo "✅ Dependencies installed successfully."
 
-      - name: Force rebuild oxc-parser
+      # 10단계: oxc-parser 강제 재빌드
+      # 특정 네이티브 의존성(oxc-parser)에 문제가 있을 경우를 대비해 강제로 재빌드합니다.
+      - name: oxc-parser 강제 재빌드
         run: |
           pnpm rebuild oxc-parser
           echo "✅ oxc-parser rebuild complete."
 
-      - name: Run Nuxt prepare manually
+      # 11단계: Nuxt prepare 수동 실행
+      # Nuxt 프로젝트의 타입 자동 생성을 위해 'nuxt prepare' 명령어를 수동으로 실행합니다.
+      - name: Nuxt 타입 자동 생성 (prepare)
         run: |
           pnpm -r exec nuxt prepare
           echo "✅ Nuxt prepare completed manually."
 
-      - name: 최종 배포물을 담을 staging 디렉터리 생성
+      # 12단계: 최종 배포물을 담을 staging 디렉터리 생성
+      # 빌드된 결과물들을 한 곳에 모으기 위한 'staging' 디렉토리를 생성합니다.
+      - name: 최종 배포 결과물을 담을 'staging' 디렉토리 생성
         run: mkdir -p staging
 
-      - name: 루트 index.html을 staging으로 복사
+      # 13단계: 루트 index.html 복사
+      # 프로젝트 루트에 있는 index.html (GitHub Pages 랜딩 페이지)을 staging 디렉토리로 복사합니다.
+      - name: 루트 index.html을 'staging'으로 복사
         run: cp index.html staging/
 
       # -------------------------------------------------------------
       # forgeline-brief 빌드 및 복사
       # -------------------------------------------------------------
-      - name: Build forgeline-brief
+      # 14단계: forgeline-brief 빌드
+      # 'brief' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-brief' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      - name: 'forgeline-brief' 패키지 빌드
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forgeline-brief..."
           pnpm --filter forgeline-brief generate
           echo "✅ forgeline-brief build complete."
 
-      # 🟩 [수정됨] Nuxt public 경로 변화 (_nuxt) 대비 복사 fallback 추가
-      - name: Copy brief to staging
+      # 15단계: forgeline-brief 결과물 복사
+      # 빌드된 'forgeline-brief'의 결과물을 'staging/forgeline-brief' 디렉토리로 복사합니다.
+      # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
+      - name: 'forgeline-brief' 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-brief
           cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/ \
-          || cp -r packages/forgeline-brief/.output/public/_nuxt/* staging/forgeline-brief/  # ← 추가됨
+          || cp -r packages/forgeline-brief/.output/public/_nuxt/* staging/forgeline-brief/
           echo "📦 forgeline-brief copied to staging."
 
       # -------------------------------------------------------------
       # forgeline-app 빌드 및 복사 (Nuxt4 SSG)
       # -------------------------------------------------------------
-      - name: Build forgeline-app
+      # 16단계: forgeline-app 빌드
+      # 'app' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-app' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      - name: 'forgeline-app' 패키지 빌드
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forgeline-app..."
           pnpm --filter forgeline-app build
           echo "✅ forgeline-app build complete."
 
-      # 🟩 [수정됨] Nuxt public 경로 변화 (_nuxt) 대비 복사 fallback 추가
-      - name: Copy app to staging
+      # 17단계: forgeline-app 결과물 복사
+      # 빌드된 'forgeline-app'의 결과물을 'staging/forgeline-app' 디렉토리로 복사합니다.
+      # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
+      - name: 'forgeline-app' 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-app
           cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/ \
-          || cp -r packages/forgeline-app/.output/public/_nuxt/* staging/forgeline-app/  # ← 추가됨
+          || cp -r packages/forgeline-app/.output/public/_nuxt/* staging/forgeline-app/
           echo "📦 forgeline-app copied to staging."
 
       # -------------------------------------------------------------
       # GitHub Pages 업로드 및 배포
       # -------------------------------------------------------------
-      - name: 통합된 staging 디렉터리를 아티팩트로 업로드
+      # 18단계: 배포 아티팩트 업로드
+      # 'staging' 디렉토리의 모든 내용을 GitHub Pages 배포를 위한 아티팩트로 업로드합니다.
+      - name: 'staging' 디렉토리를 배포 아티팩트로 업로드
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'staging'
 
+      # 19단계: GitHub Pages에 배포
+      # 업로드된 아티팩트를 사용하여 GitHub Pages에 최종적으로 배포합니다.
       - name: GitHub Pages에 배포
         uses: actions/deploy-pages@v2
