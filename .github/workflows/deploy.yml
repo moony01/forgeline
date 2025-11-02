@@ -56,9 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     # 권한 설정: 워크플로가 GitHub API와 상호작용하는 데 필요한 권한을 부여합니다.
     permissions:
-      contents: read  # 저장소 컨텐츠를 읽기 위한 권한
-      pages: write     # GitHub Pages에 쓰기 위한 권한
-      id-token: write  # OIDC(OpenID Connect) 토큰을 사용하기 위한 권한
+      contents: read # 저장소 컨텐츠를 읽기 위한 권한
+      pages: write # GitHub Pages에 쓰기 위한 권한
+      id-token: write # OIDC(OpenID Connect) 토큰을 사용하기 위한 권한
 
     # 단계(steps): 실제 작업들이 순차적으로 실행됩니다.
     steps:
@@ -74,11 +74,12 @@ jobs:
           version: latest # 항상 최신 버전의 pnpm을 사용합니다.
 
       # 3단계: Node.js 설치
-      # actions/setup-node@v4 액션을 사용하여 특정 버전의 Node.js 환경을 설정합니다.
-      - name: Node.js 설치 (18.x 버전)
+      # ⚠️ Node 18은 oxc-parser의 prebuild가 제공되지 않아 CI 환경에서 네이티브 바인딩을 찾지 못함.
+      # Node 22.x LTS로 올리면 prebuild가 자동 다운로드되어 빌드 실패가 사라집니다.
+      - name: Node.js 설치 (22.x 버전)
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Node.js 18 버전을 사용합니다.
+          node-version: '22' # ✅ Node.js 22 버전을 사용합니다 (oxc-parser 호환성 개선).
 
       # 4단계: pnpm 캐시 복원
       # actions/cache@v3 액션을 사용하여 pnpm 저장소 캐시를 복원합니다.
@@ -124,14 +125,21 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      # 9단계: 의존성 설치 (스크립트 제외)
-      # pnpm install을 실행하여 모든 의존성을 설치합니다.
-      # --frozen-lockfile: pnpm-lock.yaml을 변경하지 않고 정확히 명시된 버전으로 설치합니다.
-      # --ignore-scripts: 의존성 설치 시 자동으로 실행되는 스크립트(postinstall 등)를 건너뜁니다.
-      - name: pnpm 의존성 설치 (스크립트 제외)
+      # 9단계: 의존성 설치 (스크립트 실행 허용)
+      # ⚠️ --ignore-scripts 옵션이 postinstall 빌드(특히 oxc-parser 네이티브 모듈)를 막고 있었습니다.
+      # 제거하여 oxc-parser가 정상적으로 .node 바이너리를 빌드하도록 수정합니다.
+      - name: pnpm 의존성 설치
         run: |
-          pnpm install --frozen-lockfile --ignore-scripts
-          echo "✅ Dependencies installed successfully."
+          pnpm install --frozen-lockfile
+          echo "✅ Dependencies installed successfully (scripts enabled)."
+
+      # 9.5단계: oxc-parser 네이티브 빌드 검증
+      # 🧩 추가된 디버그 스텝: oxc-parser의 네이티브 바인딩(.node 파일)이 실제로 존재하는지 확인합니다.
+      # CI 환경에서 누락될 경우 바로 로그로 확인할 수 있습니다.
+      - name: oxc-parser 네이티브 빌드 검증
+        run: |
+          echo "🔍 Checking oxc-parser native build..."
+          find node_modules/.pnpm/oxc-parser@*/node_modules/oxc-parser/src-js -type f -name "*.node" || echo "⚠️ No .node binary found (check postinstall build)"
 
       # 10단계: oxc-parser 강제 재빌드
       # 특정 네이티브 의존성(oxc-parser)에 문제가 있을 경우를 대비해 강제로 재빌드합니다.
@@ -162,7 +170,7 @@ jobs:
       # -------------------------------------------------------------
       # 14단계: forgeline-brief 빌드
       # 'brief' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-brief' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
-      - name: 'forgeline-brief' 패키지 빌드
+      - name: forgeline-brief 패키지 빌드
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forgeline-brief..."
@@ -172,7 +180,7 @@ jobs:
       # 15단계: forgeline-brief 결과물 복사
       # 빌드된 'forgeline-brief'의 결과물을 'staging/forgeline-brief' 디렉토리로 복사합니다.
       # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
-      - name: 'forgeline-brief' 빌드 결과물을 'staging'으로 복사
+      - name: forgeline-brief 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-brief
@@ -185,7 +193,7 @@ jobs:
       # -------------------------------------------------------------
       # 16단계: forgeline-app 빌드
       # 'app' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-app' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
-      - name: 'forgeline-app' 패키지 빌드
+      - name: forgeline-app 패키지 빌드
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forgeline-app..."
@@ -195,7 +203,7 @@ jobs:
       # 17단계: forgeline-app 결과물 복사
       # 빌드된 'forgeline-app'의 결과물을 'staging/forgeline-app' 디렉토리로 복사합니다.
       # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
-      - name: 'forgeline-app' 빌드 결과물을 'staging'으로 복사
+      - name: forgeline-app 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forgeline-app
@@ -208,7 +216,7 @@ jobs:
       # -------------------------------------------------------------
       # 18단계: 배포 아티팩트 업로드
       # 'staging' 디렉토리의 모든 내용을 GitHub Pages 배포를 위한 아티팩트로 업로드합니다.
-      - name: 'staging' 디렉토리를 배포 아티팩트로 업로드
+      - name: staging 디렉토리를 배포 아티팩트로 업로드
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'staging'
