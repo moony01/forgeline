@@ -7,6 +7,17 @@ on:
     branches:
       - main
 
+#️⃣ [추가] 최상단 권한을 명시 (job별 권한보다 명확)
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+#️⃣ [추가] Pages 배포는 동시 실행보다 직전 실행 취소가 안전
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 # 실행될 작업(Job)들을 정의합니다.
 jobs:
   # 'changes' 작업: 어떤 패키지(app, brief)에 변경이 있었는지 감지합니다.
@@ -54,6 +65,9 @@ jobs:
       (needs.changes.outputs.app == 'true' || needs.changes.outputs.brief == 'true' || contains(github.event.head_commit.message, '[deploy:'))
     # 실행 환경: 최신 버전의 Ubuntu에서 실행됩니다.
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     # 권한 설정: 워크플로가 GitHub API와 상호작용하는 데 필요한 권한을 부여합니다.
     permissions:
       contents: read # 저장소 컨텐츠를 읽기 위한 권한
@@ -224,4 +238,8 @@ jobs:
       # 19단계: GitHub Pages에 배포
       # 업로드된 아티팩트를 사용하여 GitHub Pages에 최종적으로 배포합니다.
       - name: GitHub Pages에 배포
-        uses: actions/deploy-pages@v2
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # 업로드 단계와 동일한 아티팩트 이름을 사용합니다.
+          artifact_name: github-pages
