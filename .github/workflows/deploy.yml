@@ -211,7 +211,7 @@ jobs:
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forgeline-app..."
-          pnpm --filter forgeline-app build
+          pnpm --filter forgeline-app generate
           echo "✅ forgeline-app build complete."
 
       # 17단계: forgeline-app 결과물 복사
