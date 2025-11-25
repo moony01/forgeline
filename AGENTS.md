@@ -35,9 +35,9 @@
 - **`packages/`**
   - 재사용 가능한 패키지, 모듈, 프레임워크를 포함합니다.
   - 포함 항목:
-    - `forgeline-app` (Nuxt SSR/CSR 프레임워크 보일러플레이트)
-    - `forgeline-brief` (브리프 입력 UI)
-    - `forgeline-modules` (공유 스키마, 서비스, UI 컴포넌트)
+    - `forjex-app` (Nuxt SSR/CSR 프레임워크 보일러플레이트)
+    - `forjex-brief` (브리프 입력 UI)
+    - `forjex-modules` (공유 스키마, 서비스, UI 컴포넌트)
 
 - **`core/`**
   - 핵심 로직, 자동화 도구, 서비스를 포함합니다.

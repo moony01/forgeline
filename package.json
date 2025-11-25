@@ -1,14 +1,15 @@
 {
-  "name": "forgeline",
+  "name": "forjex",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
+  "description": "Forjex Monorepo Workspace",
   "main": "index.js",
   "scripts": {
-    "dev:app": "pnpm --filter forgeline-app dev",
-    "build:app": "pnpm --filter forgeline-app build",
-    "dev:brief": "pnpm --filter forgeline-brief dev",
-    "build:brief": "pnpm --filter forgeline-brief build",
-    "start:figma": "pnpm --filter forgeline-mcp-server start:ws",
+    "dev:app": "pnpm --filter forjex-app dev",
+    "build:app": "pnpm --filter forjex-app build",
+    "dev:brief": "pnpm --filter forjex-brief dev",
+    "build:brief": "pnpm --filter forjex-brief build",
+    "start:figma": "pnpm --filter forjex-mcp-server start:ws",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.vue --fix && prettier --write . && tsc --noEmit",
     "test": "echo \"No tests configured. Please set up a test runner.\" && exit 1"
   },

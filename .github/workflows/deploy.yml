@@ -46,9 +46,9 @@ jobs:
         with:
           filters: |
             app:
-              - 'packages/forgeline-app/**'
+              - 'packages/forjex-app/**'
             brief:
-              - 'packages/forgeline-brief/**'
+              - 'packages/forjex-brief/**'
 
   # 'build-and-deploy' 작업: 코드를 빌드하고 GitHub Pages에 배포합니다.
   build-and-deploy:
@@ -181,50 +181,50 @@ jobs:
         run: cp index.html staging/
 
       # -------------------------------------------------------------
-      # forgeline-brief 빌드 및 복사
+      # forjex-brief 빌드 및 복사
       # -------------------------------------------------------------
-      # 14단계: forgeline-brief 빌드
-      # 'brief' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-brief' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
-      - name: forgeline-brief 패키지 빌드
-        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
+      # 14단계: forjex-brief 빌드
+      # 'brief' 패키지에 변경이 있었거나, 커밋 메시지에 'forjex-brief' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      - name: forjex-brief 패키지 빌드
+        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
-          echo "🚀 Building forgeline-brief..."
-          pnpm --filter forgeline-brief generate
-          echo "✅ forgeline-brief build complete."
+          echo "🚀 Building forjex-brief..."
+          pnpm --filter forjex-brief generate
+          echo "✅ forjex-brief build complete."
 
-      # 15단계: forgeline-brief 결과물 복사
-      # 빌드된 'forgeline-brief'의 결과물을 'staging/forgeline-brief' 디렉토리로 복사합니다.
+      # 15단계: forjex-brief 결과물 복사
+      # 빌드된 'forjex-brief'의 결과물을 'staging/forjex-brief' 디렉토리로 복사합니다.
       # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
-      - name: forgeline-brief 빌드 결과물을 'staging'으로 복사
-        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
+      - name: forjex-brief 빌드 결과물을 'staging'으로 복사
+        if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
-          mkdir -p staging/forgeline-brief
-          cp -r packages/forgeline-brief/.output/public/* staging/forgeline-brief/ \
-          || cp -r packages/forgeline-brief/.output/public/_nuxt/* staging/forgeline-brief/
-          echo "📦 forgeline-brief copied to staging."
+          mkdir -p staging/forjex-brief
+          cp -r packages/forjex-brief/.output/public/* staging/forjex-brief/ \
+          || cp -r packages/forjex-brief/.output/public/_nuxt/* staging/forjex-brief/
+          echo "📦 forjex-brief copied to staging."
 
       # -------------------------------------------------------------
-      # forgeline-app 빌드 및 복사 (Nuxt4 SSG)
+      # forjex-app 빌드 및 복사 (Nuxt4 SSG)
       # -------------------------------------------------------------
-      # 16단계: forgeline-app 빌드
-      # 'app' 패키지에 변경이 있었거나, 커밋 메시지에 'forgeline-app' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
-      - name: forgeline-app 패키지 빌드
-        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
+      # 16단계: forjex-app 빌드
+      # 'app' 패키지에 변경이 있었거나, 커밋 메시지에 'forjex-app' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      - name: forjex-app 패키지 빌드
+        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
-          echo "🚀 Building forgeline-app..."
-          pnpm --filter forgeline-app generate
-          echo "✅ forgeline-app build complete."
+          echo "🚀 Building forjex-app..."
+          pnpm --filter forjex-app generate
+          echo "✅ forjex-app build complete."
 
-      # 17단계: forgeline-app 결과물 복사
-      # 빌드된 'forgeline-app'의 결과물을 'staging/forgeline-app' 디렉토리로 복사합니다.
+      # 17단계: forjex-app 결과물 복사
+      # 빌드된 'forjex-app'의 결과물을 'staging/forjex-app' 디렉토리로 복사합니다.
       # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
-      - name: forgeline-app 빌드 결과물을 'staging'으로 복사
-        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forgeline-app') || contains(steps.deploy_targets.outputs.targets, 'all')
+      - name: forjex-app 빌드 결과물을 'staging'으로 복사
+        if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
-          mkdir -p staging/forgeline-app
-          cp -r packages/forgeline-app/.output/public/* staging/forgeline-app/ \
-          || cp -r packages/forgeline-app/.output/public/_nuxt/* staging/forgeline-app/
-          echo "📦 forgeline-app copied to staging."
+          mkdir -p staging/forjex-app
+          cp -r packages/forjex-app/.output/public/* staging/forjex-app/ \
+          || cp -r packages/forjex-app/.output/public/_nuxt/* staging/forjex-app/
+          echo "📦 forjex-app copied to staging."
 
       # -------------------------------------------------------------
       # GitHub Pages 업로드 및 배포

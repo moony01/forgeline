@@ -4,7 +4,7 @@
       <!-- Header -->
       <header class="text-center mb-10">
         <div class="flex justify-start">
-          <span class="text-blue-600 font-bold text-lg">Forgeline</span>
+          <span class="text-blue-600 font-bold text-lg">Forjex</span>
         </div>
         <h1 class="font-semibold text-2xl mt-4">웹사이트 기획서 입력</h1>
         <p class="text-gray-600">고객의 웹사이트 제작 요청 정보를 아래 폼에 입력하세요.</p>
