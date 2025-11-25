@@ -2,26 +2,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch forgeline-app",
+      "name": "Launch forjex-app",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm --filter forgeline-app dev",
+      "command": "pnpm --filter forjex-app dev",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "presentation": {
-        "group": "forgeline",
+        "group": "forjex",
         "order": 1
       }
     },
     {
-      "name": "Launch forgeline-brief",
+      "name": "Launch forjex-brief",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm --filter forgeline-brief dev",
+      "command": "pnpm --filter forjex-brief dev",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "presentation": {
-        "group": "forgeline",
+        "group": "forjex",
         "order": 2
       }
     }
