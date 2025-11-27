@@ -1,58 +1,25 @@
-# Forgeline
+# Forjex
 
-(프로젝트에 대한 간략한 설명을 여기에 추가하세요.)
+Forjex는 디지털 제품 제작을 위한 모노레포 환경으로, 브리프 수집부터 앱 제공까지를 하나의 워크스페이스에서 관리합니다. Nuxt 기반 웹 애플리케이션과 지원 도구, 프롬프트 템플릿을 함께 담아 팀이 동일한 개발 경험을 공유하도록 구성되어 있습니다.
 
-## 프로젝트 구조
+## 워크스페이스 구조
 
-이 워크스페이스는 pnpm을 사용하여 관리되며, 여러 개의 개별 패키지를 포함하고 있습니다.
+- `apps/`: 실제 납품 또는 운영용 애플리케이션이 위치하는 영역입니다.
+- `packages/`: 재사용 가능한 모듈 모음입니다. `forjex-app`(Nuxt 기반 메인 앱), `forjex-brief`(제작 의뢰용 브리프 입력 UI), `forjex-modules`(공유 스키마·서비스·UI 컴포넌트) 등이 포함됩니다.
+- `core/`: 자동화 스크립트, MCP 서버 등 워크플로우를 지원하는 핵심 도구가 위치합니다.
+- `prompts/`: 에이전트가 활용하는 프롬프트 템플릿과 자동화 스크립트가 정리되어 있습니다.
+- `doc/`: 아키텍처, 명명 규칙, 작업 가이드 등 지식 베이스가 모여 있습니다.
+- `log/`: 작업 로그나 실행 기록을 보관하는 디렉터리입니다.
 
-- `packages/forgeline-app`: Forgeline의 메인 애플리케이션입니다.
-- `packages/forgeline-brief`: Forgeline의 브리핑용 애플리케이션입니다.
+## 루트 리소스 역할
 
-## 시작하기
-
-### 사전 준비
-
-- [Node.js](https://nodejs.org/)
-- [pnpm](https://pnpm.io/installation)
-
-### 설치
-
-프로젝트의 모든 종속성을 설치하려면 루트 디렉토리에서 다음 명령어를 실행하세요.
-
-```bash
-pnpm install
-```
-
-### 개발 서버 실행
-
-각 애플리케이션은 별도의 포트에서 실행할 수 있습니다.
-
-- **Forgeline App 실행:**
-
-  ```bash
-  pnpm dev:app
-  ```
-
-  애플리케이션은 `http://localhost:3000` 에서 실행됩니다.
-
-- **Forgeline Brief 실행:**
-  ```bash
-  pnpm dev:brief
-  ```
-  애플리케이션은 `http://localhost:3001` 에서 실행됩니다.
-
-## 빌드
-
-각 애플리케이션을 프로덕션용으로 빌드하려면 다음 명령어를 사용하세요.
-
-- **Forgeline App 빌드:**
-
-  ```bash
-  pnpm build:app
-  ```
-
-- **Forgeline Brief 빌드:**
-  ```bash
-  pnpm build:brief
-  ```
+- `AGENTS.md`: Codex 에이전트 운영 지침과 워크스페이스 사용 규칙을 정의합니다.
+- `GEMINI.md`: Gemini 에이전트 또는 도구 사용 시 참고하는 별도 가이드입니다.
+- `forjex.code-workspace`: VS Code에서 모노레포를 한 번에 열기 위한 워크스페이스 설정입니다.
+- `package.json`: 워크스페이스 공통 스크립트와 의존성 관리를 위한 메타데이터입니다.
+- `pnpm-workspace.yaml`: pnpm이 어떤 하위 경로를 워크스페이스 패키지로 인식할지 정의하는 설정입니다.
+- `pnpm-lock.yaml`: 모든 의존성 버전과 해시를 고정해 재현 가능한 설치를 보장하는 잠금 파일입니다.
+- `prettier.config.cjs`: 코드 포맷 기준을 정의하는 Prettier 설정입니다.
+- `tsconfig.json`: TypeScript 컴파일러 옵션과 경로 별칭 등을 설정합니다.
+- `index.html`: 정적 자원 테스트나 간단한 샘플을 위한 루트 HTML 파일입니다.
+- `node_modules/`: pnpm이 설치한 의존성 결과물이 위치하며, 자동 생성되므로 수동 수정은 피합니다.
