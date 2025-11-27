@@ -140,90 +140,56 @@ jobs:
           rm -rf node_modules
           find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
-      # 9단계: 의존성 설치 (스크립트 실행 허용)
-      # ⚠️ --ignore-scripts 옵션이 postinstall 빌드(특히 oxc-parser 네이티브 모듈)를 막고 있었습니다.
-      # 제거하여 oxc-parser가 정상적으로 .node 바이너리를 빌드하도록 수정합니다.
+      # 9단계: 의존성 설치
       - name: pnpm 의존성 설치
         run: |
           pnpm install --frozen-lockfile
-          echo "✅ Dependencies installed successfully (scripts enabled)."
+          echo "✅ Dependencies installed successfully."
 
-      # 9.5단계: oxc-parser 네이티브 빌드 검증
-      # 🧩 추가된 디버그 스텝: oxc-parser의 네이티브 바인딩(.node 파일)이 실제로 존재하는지 확인합니다.
-      # CI 환경에서 누락될 경우 바로 로그로 확인할 수 있습니다.
-      - name: oxc-parser 네이티브 빌드 검증
-        run: |
-          echo "🔍 Checking oxc-parser native build..."
-          find node_modules/.pnpm/oxc-parser@*/node_modules/oxc-parser/src-js -type f -name "*.node" || echo "⚠️ No .node binary found (check postinstall build)"
-
-      # 10단계: oxc-parser 강제 재빌드
-      # 특정 네이티브 의존성(oxc-parser)에 문제가 있을 경우를 대비해 강제로 재빌드합니다.
-      - name: oxc-parser 강제 재빌드
-        run: |
-          pnpm rebuild oxc-parser
-          echo "✅ oxc-parser rebuild complete."
-
-      # 11단계: Nuxt prepare 수동 실행
-      # Nuxt 프로젝트의 타입 자동 생성을 위해 'nuxt prepare' 명령어를 수동으로 실행합니다.
-      - name: Nuxt 타입 자동 생성 (prepare)
-        run: |
-          pnpm -r exec nuxt prepare
-          echo "✅ Nuxt prepare completed manually."
-
-      # 12단계: 최종 배포물을 담을 staging 디렉터리 생성
-      # 빌드된 결과물들을 한 곳에 모으기 위한 'staging' 디렉토리를 생성합니다.
+      # 10단계: 최종 배포물을 담을 staging 디렉터리 생성
       - name: 최종 배포 결과물을 담을 'staging' 디렉토리 생성
         run: mkdir -p staging
 
-      # 13단계: 루트 index.html 복사
-      # 프로젝트 루트에 있는 index.html (GitHub Pages 랜딩 페이지)을 staging 디렉토리로 복사합니다.
+      # 11단계: 루트 index.html 복사
       - name: 루트 index.html을 'staging'으로 복사
         run: cp index.html staging/
 
       # -------------------------------------------------------------
       # forjex-brief 빌드 및 복사
       # -------------------------------------------------------------
-      # 14단계: forjex-brief 빌드
-      # 'brief' 패키지에 변경이 있었거나, 커밋 메시지에 'forjex-brief' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      # 12단계: forjex-brief 빌드
       - name: forjex-brief 패키지 빌드
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forjex-brief..."
-          pnpm --filter forjex-brief generate
+          pnpm --filter forjex-brief build
           echo "✅ forjex-brief build complete."
 
-      # 15단계: forjex-brief 결과물 복사
-      # 빌드된 'forjex-brief'의 결과물을 'staging/forjex-brief' 디렉토리로 복사합니다.
-      # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
+      # 13단계: forjex-brief 결과물 복사 (Next.js 'out' 디렉토리)
       - name: forjex-brief 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.brief == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-brief') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forjex-brief
-          cp -r packages/forjex-brief/.output/public/* staging/forjex-brief/ \
-          || cp -r packages/forjex-brief/.output/public/_nuxt/* staging/forjex-brief/
+          cp -r packages/forjex-brief/out/* staging/forjex-brief/
           echo "📦 forjex-brief copied to staging."
 
       # -------------------------------------------------------------
-      # forjex-app 빌드 및 복사 (Nuxt4 SSG)
+      # forjex-app 빌드 및 복사
       # -------------------------------------------------------------
-      # 16단계: forjex-app 빌드
-      # 'app' 패키지에 변경이 있었거나, 커밋 메시지에 'forjex-app' 또는 'all' 배포가 명시된 경우에만 실행됩니다.
+      # 14단계: forjex-app 빌드
       - name: forjex-app 패키지 빌드
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           echo "🚀 Building forjex-app..."
-          pnpm --filter forjex-app generate
+          pnpm --filter forjex-app build
           echo "✅ forjex-app build complete."
 
-      # 17단계: forjex-app 결과물 복사
-      # 빌드된 'forjex-app'의 결과물을 'staging/forjex-app' 디렉토리로 복사합니다.
-      # Nuxt 버전업에 따른 출력 경로 변경(_nuxt)에 대비하여 fallback 경로를 추가했습니다.
+      # 15단계: forjex-app 결과물 복사 (Next.js 'out' 디렉토리)
       - name: forjex-app 빌드 결과물을 'staging'으로 복사
         if: needs.changes.outputs.app == 'true' || contains(steps.deploy_targets.outputs.targets, 'forjex-app') || contains(steps.deploy_targets.outputs.targets, 'all')
         run: |
           mkdir -p staging/forjex-app
-          cp -r packages/forjex-app/.output/public/* staging/forjex-app/ \
-          || cp -r packages/forjex-app/.output/public/_nuxt/* staging/forjex-app/
+          cp -r packages/forjex-app/out/* staging/forjex-app/
           echo "📦 forjex-app copied to staging."
 
       # -------------------------------------------------------------

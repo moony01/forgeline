@@ -10,7 +10,7 @@
     "dev:brief": "pnpm --filter forjex-brief dev",
     "build:brief": "pnpm --filter forjex-brief build",
     "start:figma": "pnpm --filter forjex-mcp-server start:ws",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.vue --fix && prettier --write . && tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --fix && prettier --write . && tsc --noEmit",
     "test": "echo \"No tests configured. Please set up a test runner.\" && exit 1"
   },
   "keywords": [],
@@ -20,9 +20,7 @@
     "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
-    "@vue/eslint-config-prettier": "^9.0.0",
     "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.26.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5"
   },
