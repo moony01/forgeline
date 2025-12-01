@@ -9,7 +9,6 @@
     "build:app": "pnpm --filter forjex-app build",
     "dev:brief": "pnpm --filter forjex-brief dev",
     "build:brief": "pnpm --filter forjex-brief build",
-    "start:figma": "pnpm --filter forjex-mcp-server start:ws",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --fix && prettier --write . && tsc --noEmit",
     "test": "echo \"No tests configured. Please set up a test runner.\" && exit 1"
   },
